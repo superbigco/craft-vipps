@@ -1,0 +1,42 @@
+{
+    "name": "superbig/craft-vipps",
+    "description": "Integrate Commerce with Vipps",
+    "type": "craft-plugin",
+    "version": "1.0.0",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "vipps"
+    ],
+    "support": {
+        "docs": "https://github.com/superbigco/craft-vipps/blob/master/README.md",
+        "issues": "https://github.com/superbigco/craft-vipps/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Superbig",
+            "homepage": "https://superbig.co"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^3.1.0",
+        "craftcms/commerce": "^2.0",
+        "tightenco/collect": "^5.7.0"
+    },
+    "autoload": {
+        "psr-4": {
+          "superbig\\vipps\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Vipps",
+        "handle": "vipps",
+        "hasCpSettings": true,
+        "hasCpSection": false,
+        "changelogUrl": "https://raw.githubusercontent.com/superbigco/craft-vipps/master/CHANGELOG.md",
+        "class": "superbig\\vipps\\Vipps"
+    }
+}
