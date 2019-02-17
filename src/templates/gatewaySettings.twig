@@ -7,6 +7,7 @@
     class: 'ltr',
     name: 'clientId',
     value: gateway.clientId,
+    required: true,
     errors: gateway.getErrors('clientId')
 }) }}
 
@@ -17,6 +18,7 @@
     class: 'ltr',
     name: 'clientSecret',
     value: gateway.clientSecret,
+    required: true,
     errors: gateway.getErrors('clientSecret')
 }) }}
 
@@ -27,6 +29,7 @@
     class: 'ltr',
     name: 'subscriptionKeyAccessToken',
     value: gateway.subscriptionKeyAccessToken,
+    required: true,
     errors: gateway.getErrors('subscriptionKeyAccessToken')
 }) }}
 
@@ -37,6 +40,7 @@
     class: 'ltr',
     name: 'subscriptionKeyEcommerce',
     value: gateway.subscriptionKeyEcommerce,
+    required: true,
     errors: gateway.getErrors('subscriptionKeyEcommerce')
 }) }}
 
@@ -47,6 +51,7 @@
     class: 'ltr',
     name: 'merchantSerialNumber',
     value: gateway.merchantSerialNumber,
+    required: true,
     errors: gateway.getErrors('merchantSerialNumber')
 }) }}
 
@@ -78,6 +83,7 @@
     class: 'ltr',
     readonly: true,
     value: authToken,
+    required: true,
     errors: gateway.getErrors('authToken')
 }) }}
 
