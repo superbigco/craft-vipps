@@ -28,7 +28,12 @@ class PaymentModel extends Model
     /**
      * @var string
      */
-    public $someAttribute = 'Some Default';
+    public $shortId = '';
+
+    /**
+     * @var int
+     */
+    public $orderId;
 
     // Public Methods
     // =========================================================================
@@ -39,8 +44,7 @@ class PaymentModel extends Model
     public function rules()
     {
         return [
-            ['someAttribute', 'string'],
-            ['someAttribute', 'default', 'value' => 'Some Default'],
+            [['shortId', 'orderId'], 'required'],
         ];
     }
 }

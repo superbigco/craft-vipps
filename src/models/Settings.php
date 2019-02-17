@@ -28,16 +28,18 @@ class Settings extends Model
     /**
      * @var string
      */
-    public $clientId                    = '';
-    public $clientSecret                = '';
-    public $subscriptionKeyAccessToken  = '';
-    public $subscriptionKeyEcommerce    = '';
-    public $merchantSerialNumber        = '';
-    public $transactionText             = '';
-    public $testMode                    = false;
-    public $expressCheckout             = true;
-    public $createUserOnExpressCheckout = true;
-    public $loginWithVipps              = false;
+    public $clientId                     = '';
+    public $clientSecret                 = '';
+    public $subscriptionKeyAccessToken   = '';
+    public $subscriptionKeyEcommerce     = '';
+    public $merchantSerialNumber         = '';
+    public $transactionText              = '';
+    public $testMode                     = false;
+    public $expressCheckout              = true;
+    public $createUserOnExpressCheckout  = true;
+    public $loginWithVipps               = false;
+    public $addItemToCartIfAlreadyExists = false;
+    public $newCartOnExpressCheckout     = true;
 
     // Public Methods
     // =========================================================================

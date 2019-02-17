@@ -10,8 +10,13 @@
 
 namespace superbig\vipps;
 
+use craft\commerce\services\Gateways;
+use craft\web\twig\variables\CraftVariable;
+use superbig\vipps\gateways\Gateway;
+use superbig\vipps\services\Api;
 use superbig\vipps\services\Payments as PaymentsService;
 use superbig\vipps\services\Express as ExpressService;
+use superbig\vipps\services\Api as ApiService;
 use superbig\vipps\models\Settings;
 use superbig\vipps\utilities\VippsUtility as VippsUtilityUtility;
 
@@ -24,6 +29,7 @@ use craft\services\Utilities;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 
+use superbig\vipps\variables\VippsVariable;
 use yii\base\Event;
 
 /**
@@ -35,6 +41,7 @@ use yii\base\Event;
  *
  * @property  PaymentsService $payments
  * @property  ExpressService  $express
+ * @property  ApiService      $api
  */
 class Vipps extends Plugin
 {
@@ -68,6 +75,7 @@ class Vipps extends Plugin
         $this->setComponents([
             'payments' => PaymentsService::class,
             'express'  => ExpressService::class,
+            'api'      => Api::class,
         ]);
 
         Event::on(
@@ -77,10 +85,25 @@ class Vipps extends Plugin
                 $event->rules = array_merge($event->rules, [
                     // @todo handle + callbackPrefix https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api.md#express-checkout-payments
                     // callbackPrefix: https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api.md#initiate-payment
-                    'vipps/callbacks/v2/consents/{userId}'                  => '',
-                    'vipps/callbacks/v2/payments/{orderId}'                 => '',
-                    'vipps/callbacks/v2/payments/{orderId}/shippingDetails' => '',
+                    'vipps/callbacks/v2/consents/<userId>'                  => 'vipps/callback/consent-removal',
+                    'vipps/callbacks/v2/payments/<orderId>'                 => 'vipps/callback/complete',
+                    'vipps/callbacks/v2/payments/<orderId>/shippingDetails' => 'vipps/callback/shipping-details',
+                    'vipps/express/checkout'                                => 'vipps/express/checkout',
                 ]);
+            }
+        );
+
+        Event::on(Gateways::class, Gateways::EVENT_REGISTER_GATEWAY_TYPES, function(RegisterComponentTypesEvent $event) {
+            $event->types[] = Gateway::class;
+        });
+
+        Event::on(
+            CraftVariable::class,
+            CraftVariable::EVENT_INIT,
+            function(Event $event) {
+                /** @var CraftVariable $variable */
+                $variable = $event->sender;
+                $variable->set('vipps', VippsVariable::class);
             }
         );
 

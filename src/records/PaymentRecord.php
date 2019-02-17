@@ -20,7 +20,7 @@ use craft\db\ActiveRecord;
  * @package   Vipps
  * @since     1.0.0
  */
-class Payment extends ActiveRecord
+class PaymentRecord extends ActiveRecord
 {
     // Public Static Methods
     // =========================================================================

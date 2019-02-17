@@ -1,0 +1,7 @@
+<form action="{{ siteUrl('vipps/express/checkout') }}">
+    <input type="hidden" name="purchasableId" value="{{ purchasableId }}">
+
+    {% if variantId is defined %}
+        <input type="hidden" name="variantId" value="{{ variantId }}">
+    {% endif %}
+</form>

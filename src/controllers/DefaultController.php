@@ -39,11 +39,13 @@ class DefaultController extends Controller
     /**
      * @return mixed
      */
-    public function actionIndex()
+    public function actionPaymentStatus()
     {
-        $result = 'Welcome to the DefaultController actionIndex() method';
+        $orderId = Craft::$app->getRequest()->getParam('orderId', '8728377');
 
-        return $result;
+        return $this->asJson([
+            'status' => Vipps::$plugin->payments->paymentStatus($orderId),
+        ]);
     }
 
     /**

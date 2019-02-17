@@ -10,9 +10,13 @@
 
 namespace superbig\vipps\services;
 
+use craft\helpers\Json;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use Exception;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\BadResponseException;
+use function GuzzleHttp\Psr7\build_query;
 use superbig\vipps\Vipps;
 
 use Craft;
@@ -28,20 +32,23 @@ class Api extends Component
     // Public Methods
     // =========================================================================
 
-    public function getHeaders(): array
+    public function init()
     {
-        $date    = gmdate('c');
-        $ip      = $_SERVER['SERVER_ADDR'];
-        $at      = '';
-        $subKey  = 'Ocp_Apim_Key_eCommerce';
-        $merch   = Vipps::$plugin->getSettings()->merchantSerialNumber;
-        $headers = [
-            'Authorization'             => 'Bearer ' . $at,
-            'X-Request-Id'              => $requestId = 1,
-            'X-TimeStamp'               => $date,
-            'X-Source-Address'          => $ip,
-            'Ocp-Apim-Subscription-Key' => $subKey,
+        // Set initial token
+        $this->getAccessToken();
+    }
 
+    public function getAccessTokenHeader()
+    {
+        $token = $this->_accessToken;
+
+        if (!$token) {
+            return null;
+        }
+
+        return [
+            'Authorization'             => 'Bearer ' . $token,
+            'ocp-apim-subscription-key' => Vipps::$plugin->getSettings()->subscriptionKeyEcommerce,
         ];
     }
 
@@ -52,24 +59,159 @@ class Api extends Component
         return $testMode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';
     }
 
-    // Fetch an access token if possible from the Vipps Api IOK 2018-04-18
     private function getAccessToken()
     {
-        $clientid = $this->get_option('clientId');
-        $secret   = $this->get_option('secret');
-        $at       = $this->get_option('Ocp_Apim_Key_AccessToken');
-        $command  = 'accessToken/get';
-        try {
-            $result = $this->http_call($command, [], 'POST', ['client_id' => $clientid, 'client_secret' => $secret, 'Ocp-Apim-Subscription-Key' => $at], 'url');
-
-            return $result;
-        } catch (TemporaryVippsAPIException $e) {
-            $this->log(__("Could not get Vipps access token", 'woo-vipps') . ' ' . $e->getMessage());
-            throw $e;
-        } catch (Exception $e) {
-            $this->log(__("Could not get Vipps access token", 'woo-vipps') . ' ' . $e->getMessage());
-            throw new VippsAPIConfigurationException($e->getMessage());
+        if (!$this->_accessToken) {
+            $url                = 'accessToken/get';
+            $response           = $this->post($url, []);
+            $this->_accessToken = $response['access_token'] ?? null;
         }
+
+        return $this->_accessToken;
+    }
+
+    // Public Methods
+    // =========================================================================
+
+    const ENDPOINT      = 'https://api.vipps.no';
+    const TEST_ENDPOINT = 'https://apitest.vipps.no';
+
+    private $_client;
+    private $_accessToken;
+
+    /**
+     * @param string $url
+     * @param array  $query
+     *
+     * @return array|null
+     */
+    public function get($url = '', $query = [])
+    {
+        try {
+            $client   = $this->getClient();
+            $response = $client->get($url, [
+                'headers' => $this->getDefaultHeaders(),
+                'query'   => build_query($query),
+            ]);
+            $body     = (string)$response->getBody();
+            $json     = Json::decodeIfJson($body);
+
+            //dd($url, $query, $json);
+
+            //if (!empty($query)) {
+            // $request->getQuery()->set()
+            // }
+
+            // Cache the response
+            //craft()->fileCache->set($url, $json);
+            // Apply the limit and offset
+            //$items = array_slice($items, $offset, $limit);
+
+
+            return $json;
+        } catch (BadResponseException $e) {
+            $requestBody  = (string)$e->getRequest()->getBody();
+            $responseBody = (string)$e->getResponse()->getBody();
+            dd([
+                'url'      => $url,
+                'error'    => $e->getMessage(),
+                'query'    => $query,
+                'request'  => Json::decodeIfJson($requestBody),
+                'response' => Json::decodeIfJson($responseBody),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            dd([
+                'url'   => $url,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * @param string $url
+     * @param array  $query
+     *
+     * @return array|null
+     */
+    public function post($url = '', $data = [])
+    {
+        try {
+            $client   = $this->getClient();
+            $response = $client->post($url, [
+                'headers' => $this->getDefaultHeaders(),
+                'json'    => $data,
+            ]);
+            $body     = (string)$response->getBody();
+            $json     = Json::decodeIfJson($body);
+
+            return $json;
+        } catch (BadResponseException $e) {
+            $requestBody  = (string)$e->getRequest()->getBody();
+            $responseBody = (string)$e->getResponse()->getBody();
+            dd([
+                'url'      => $url,
+                'error'    => $e->getMessage(),
+                'headers'  => $e->getRequest()->getHeaders(),
+                'request'  => Json::decodeIfJson($requestBody),
+                'response' => Json::decodeIfJson($responseBody),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            dd([
+                'url'   => $url,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * @return Client
+     */
+    public function getClient(): Client
+    {
+        if (!$this->_client) {
+            $this->_client = new Client([
+                'base_uri' => $this->getApiUrl(),
+                'headers'  => $this->getDefaultHeaders(),
+            ]);
+        }
+
+        return $this->_client;
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    private function getDefaultHeaders(): array
+    {
+        $date     = gmdate('c');
+        $ip       = $_SERVER['SERVER_ADDR'];
+        $settings = Vipps::$plugin->getSettings();
+        $headers  = [
+            'content-type'              => 'application/json',
+            'X-Request-Id'              => $requestId = 1,
+            'X-TimeStamp'               => $date,
+            'X-Source-Address'          => $ip,
+            'cache-control'             => 'no-cache',
+            'ocp-apim-subscription-key' => $settings->subscriptionKeyAccessToken,
+            'client_id'                 => $settings->clientId,
+            'client_secret'             => $settings->clientSecret,
+        ];
+
+        if ($tokenHeader = $this->getAccessTokenHeader()) {
+            $headers = array_merge($headers, $tokenHeader);
+            //unset($headers['client_id']);
+            //unset($headers['client_secret']);
+        }
+
+        return $headers;
     }
 }
 

@@ -1,0 +1,97 @@
+{% from "_includes/forms" import textField, lightswitchField %}
+
+{{ textField({
+    label: "Client Id"|t('vipps'),
+    instructions: "Your Vipps Client Id."|t('vipps'),
+    id: 'clientId',
+    class: 'ltr',
+    name: 'clientId',
+    value: gateway.clientId,
+    errors: gateway.getErrors('clientId')
+}) }}
+
+{{ textField({
+    label: "Client Secret"|t('vipps'),
+    instructions: "Your Vipps Client Secret."|t('vipps'),
+    id: 'clientSecret',
+    class: 'ltr',
+    name: 'clientSecret',
+    value: gateway.clientSecret,
+    errors: gateway.getErrors('clientSecret')
+}) }}
+
+{{ textField({
+    label: "Subscription key to get access token"|t('vipps'),
+    instructions: "Your Vipps Client Secret."|t('vipps'),
+    id: 'subscriptionKeyAccessToken',
+    class: 'ltr',
+    name: 'subscriptionKeyAccessToken',
+    value: gateway.subscriptionKeyAccessToken,
+    errors: gateway.getErrors('subscriptionKeyAccessToken')
+}) }}
+
+{{ textField({
+    label: "Subscription key to perform authorized API calls"|t('vipps'),
+    instructions: "Your Vipps Client Secret."|t('vipps'),
+    id: 'subscriptionKeyEcommerce',
+    class: 'ltr',
+    name: 'subscriptionKeyEcommerce',
+    value: gateway.subscriptionKeyEcommerce,
+    errors: gateway.getErrors('subscriptionKeyEcommerce')
+}) }}
+
+{{ textField({
+    label: "Merchant Serial Number"|t('vipps'),
+    instructions: "Your publishable Stripe API key."|t('vipps'),
+    id: 'merchantSerialNumber',
+    class: 'ltr',
+    name: 'merchantSerialNumber',
+    value: gateway.merchantSerialNumber,
+    errors: gateway.getErrors('merchantSerialNumber')
+}) }}
+
+{{ textField({
+    label: "Transaction text"|t("vipps"),
+    instructions: "This will be listed in the Vipps app when a user authorizes a payment."|t("vipps"),
+    id: 'transactionText',
+    name: 'transactionText',
+    class: 'ltr',
+    value: gateway.transactionText,
+    errors: gateway.getErrors('transactionText')
+}) }}
+
+{{ textField({
+    label: "Fallback URL"|t("vipps"),
+    instructions: "The user will be redirected here when finishing the payment."|t("vipps"),
+    id: 'fallbackUrl',
+    name: 'fallbackUrl',
+    class: 'ltr',
+    value: gateway.fallbackUrl,
+    errors: gateway.getErrors('fallbackUrl')
+}) }}
+
+
+{{ lightswitchField({
+    label: "Test mode"|t('vipps'),
+    name: 'testMode',
+    on: gateway.testMode,
+    errors: gateway.getErrors('testMode'),
+}) }}
+
+
+{{ lightswitchField({
+    label: "Create user on express checkout"|t('vipps'),
+    instructions: "This will create a user when someone performs a Express Checkout and they don't already have a user matching their email",
+    name: 'createUserOnExpressCheckout',
+    on: gateway.createUserOnExpressCheckout,
+    errors: gateway.getErrors('createUserOnExpressCheckout'),
+}) }}
+
+
+{{ lightswitchField({
+    label: "New cart on Express Checkout"|t('vipps'),
+    instructions: "This will clear the cart if there is already any items in it when a user performs a Express Checkout",
+    name: 'newCartOnExpressCheckout',
+    on: gateway.newCartOnExpressCheckout,
+    errors: gateway.getErrors('newCartOnExpressCheckout'),
+}) }}

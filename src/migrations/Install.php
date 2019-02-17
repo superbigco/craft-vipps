@@ -10,6 +10,7 @@
 
 namespace superbig\vipps\migrations;
 
+use superbig\vipps\records\PaymentRecord;
 use superbig\vipps\Vipps;
 
 use Craft;
@@ -51,7 +52,7 @@ class Install extends Migration
         return true;
     }
 
-   /**
+    /**
      * @inheritdoc
      */
     public function safeDown()
@@ -72,18 +73,18 @@ class Install extends Migration
     {
         $tablesCreated = false;
 
-        $tableSchema = Craft::$app->db->schema->getTableSchema('{{%vipps_payment}}');
+        $tableSchema = Craft::$app->db->schema->getTableSchema(PaymentRecord::tableName());
         if ($tableSchema === null) {
             $tablesCreated = true;
             $this->createTable(
-                '{{%vipps_payment}}',
+                PaymentRecord::tableName(),
                 [
-                    'id' => $this->primaryKey(),
+                    'id'          => $this->primaryKey(),
                     'dateCreated' => $this->dateTime()->notNull(),
                     'dateUpdated' => $this->dateTime()->notNull(),
-                    'uid' => $this->uid(),
-                    'siteId' => $this->integer()->notNull(),
-                    'some_field' => $this->string(255)->notNull()->defaultValue(''),
+                    'uid'         => $this->uid(),
+                    'orderId'     => $this->integer()->notNull(),
+                    'shortId'     => $this->string(255)->notNull()->defaultValue(''),
                 ]
             );
         }
@@ -98,12 +99,12 @@ class Install extends Migration
     {
         $this->createIndex(
             $this->db->getIndexName(
-                '{{%vipps_payment}}',
-                'some_field',
+                PaymentRecord::tableName(),
+                'shortId',
                 true
             ),
-            '{{%vipps_payment}}',
-            'some_field',
+            PaymentRecord::tableName(),
+            'shortId',
             true
         );
         // Additional commands depending on the db driver
@@ -121,10 +122,10 @@ class Install extends Migration
     protected function addForeignKeys()
     {
         $this->addForeignKey(
-            $this->db->getForeignKeyName('{{%vipps_payment}}', 'siteId'),
-            '{{%vipps_payment}}',
-            'siteId',
-            '{{%sites}}',
+            $this->db->getForeignKeyName(PaymentRecord::tableName(), 'orderId'),
+            PaymentRecord::tableName(),
+            'orderId',
+            '{{%elements}}',
             'id',
             'CASCADE',
             'CASCADE'
@@ -143,6 +144,6 @@ class Install extends Migration
      */
     protected function removeTables()
     {
-        $this->dropTableIfExists('{{%vipps_payment}}');
+        $this->dropTableIfExists(PaymentRecord::tableName());
     }
 }
