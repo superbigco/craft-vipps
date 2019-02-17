@@ -1,8 +1,10 @@
 # Vipps plugin for Craft CMS 3.x
 
-Integrate Commerce with Vipps
+Integrate Craft Commerce with Vipps.
 
-![Screenshot](resources/img/plugin-logo.png)
+_NOTE: This plugin is WIP and not ready for production._
+
+![Screenshot](resources/img/icon.png)
 
 ## Requirements
 
