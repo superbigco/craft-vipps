@@ -70,6 +70,17 @@
     errors: gateway.getErrors('fallbackUrl')
 }) }}
 
+{{ textField({
+    label: "Auth token"|t("vipps"),
+    instructions: "Token is used to verify callbacks from Vipps."|t("vipps"),
+    id: 'authToken',
+    name: 'authToken',
+    class: 'ltr',
+    readonly: true,
+    value: authToken,
+    errors: gateway.getErrors('authToken')
+}) }}
+
 
 {{ lightswitchField({
     label: "Test mode"|t('vipps'),

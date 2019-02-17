@@ -52,6 +52,23 @@ class CallbackController extends Controller
     // =========================================================================
 
     /**
+     * @param \yii\base\Action $action
+     *
+     * @return bool
+     * @throws HttpException
+     */
+    public function beforeAction($action)
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->verifyAuthToken();
+
+        return true;
+    }
+
+    /**
      * @return mixed
      */
     public function actionComplete($orderId = null)
@@ -192,5 +209,19 @@ class CallbackController extends Controller
         }
 
         return $payload;
+    }
+
+    public function verifyAuthToken()
+    {
+
+        $token     = Craft::$app->getRequest()->getHeaders()->get('authorization');
+        $gateway   = Vipps::$plugin->payments->getGateway();
+        $authToken = $gateway->getAuthToken();
+
+        if (!$token || $authToken !== $token) {
+            throw new HttpException(400, 'Invalid auth token');
+        }
+
+        return true;
     }
 }

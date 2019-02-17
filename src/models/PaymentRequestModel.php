@@ -67,6 +67,7 @@ class PaymentRequestModel extends Model
         $orderTotalMinorUnit = $this->order->getTotalPrice() * 100;
         $billingAddress      = $this->order->getBillingAddress();
         $phoneNumber         = !empty($billingAddress->phone) ? $billingAddress->phone : '48059154';
+        $gateway             = Vipps::$plugin->payments->getGateway();
 
         return [
             'customerInfo' =>
@@ -75,7 +76,7 @@ class PaymentRequestModel extends Model
                 ],
             'merchantInfo' =>
                 [
-                    'authToken'             => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1Ni',
+                    'authToken'             => $gateway->getAuthToken(),
                     'callbackPrefix'        => $callbackPrefix,
                     'shippingDetailsPrefix' => $callbackPrefix,
                     'consentRemovalPrefix'  => $callbackPrefix,

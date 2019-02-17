@@ -14,6 +14,7 @@ use craft\commerce\base\Gateway as BaseGateway;
 use craft\commerce\base\RequestResponseInterface;
 use craft\commerce\models\payments\BasePaymentForm;
 use craft\commerce\models\Transaction;
+use craft\helpers\StringHelper;
 use superbig\vipps\Vipps;
 
 use Craft;
@@ -44,6 +45,7 @@ class Gateway extends BaseGateway
     public $addItemToCartIfAlreadyExists = false;
     public $newCartOnExpressCheckout     = true;
     public $fallbackUrl                  = '';
+    public $authToken                    = '';
 
     /**
      * @inheritdoc
@@ -134,11 +136,19 @@ class Gateway extends BaseGateway
         // TODO: Implement refund() method.
     }
 
+    public function getAuthToken()
+    {
+        return !empty($this->authToken) ? $this->authToken : StringHelper::UUID();
+    }
+
     /**
      * @inheritdoc
      */
     public function getSettingsHtml()
     {
-        return Craft::$app->getView()->renderTemplate('vipps/gatewaySettings', ['gateway' => $this]);
+        return Craft::$app->getView()->renderTemplate('vipps/gatewaySettings', [
+            'gateway'   => $this,
+            'authToken' => $this->getAuthToken(),
+        ]);
     }
 }
