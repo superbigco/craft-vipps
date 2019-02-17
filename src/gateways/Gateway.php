@@ -151,4 +151,21 @@ class Gateway extends BaseGateway
             'authToken' => $this->getAuthToken(),
         ]);
     }
+
+    public function rules()
+    {
+        return array_merge(parent::rules(), [
+            [
+                [
+                    'clientId',
+                    'clientSecret',
+                    'subscriptionKeyAccessToken',
+                    'subscriptionKeyEcommerce',
+                    'merchantSerialNumber',
+                    'authToken',
+                ],
+                'required',
+            ],
+        ]);
+    }
 }
