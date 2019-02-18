@@ -39,12 +39,11 @@ use yii\base\Event;
  * @package   Vipps
  * @since     1.0.0
  *
- * @property  PaymentsService $payments
- * @property  ExpressService  $express
- * @property  ApiService      $api
  */
 class Vipps extends Plugin
 {
+    use Services;
+
     // Static Properties
     // =========================================================================
 
