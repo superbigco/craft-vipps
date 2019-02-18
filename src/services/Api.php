@@ -152,6 +152,8 @@ class Api extends Component
         } catch (BadResponseException $e) {
             $requestBody  = (string)$e->getRequest()->getBody();
             $responseBody = (string)$e->getResponse()->getBody();
+            $json     = Json::decodeIfJson($responseBody);
+
             dd([
                 'url'      => $url,
                 'error'    => $e->getMessage(),
@@ -160,7 +162,7 @@ class Api extends Component
                 'response' => Json::decodeIfJson($responseBody),
             ]);
 
-            return null;
+            return $json;
         } catch (\Exception $e) {
             dd([
                 'url'   => $url,

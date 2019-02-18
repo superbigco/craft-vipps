@@ -83,20 +83,10 @@ class Gateway extends BaseGateway
      */
     public function capture(Transaction $transaction, string $reference): RequestResponseInterface
     {
-        // TODO: Implement capture() method.
         // https://github.com/craftcms/commerce-omnipay/blob/master/src/base/Gateway.php#L549
-    }
+        $response = Vipps::$plugin->getPayments()->captureFromGateway($transaction);
 
-    /**
-     * Complete the authorization for offsite payments.
-     *
-     * @param Transaction $transaction The transaction
-     *
-     * @return RequestResponseInterface
-     */
-    public function completeAuthorize(Transaction $transaction): RequestResponseInterface
-    {
-        // TODO: Implement completeAuthorize() method.
+        return $response;
     }
 
     /**
@@ -150,6 +140,12 @@ class Gateway extends BaseGateway
             'gateway'   => $this,
             'authToken' => $this->getAuthToken(),
         ]);
+    }
+    public function getPaymentTypeOptions(): array
+    {
+        return [
+            'authorize' => Craft::t('commerce', 'Authorize Only (Manually Capture)'),
+        ];
     }
 
     public function rules()

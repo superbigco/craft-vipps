@@ -10,15 +10,21 @@
 
 namespace superbig\vipps\controllers;
 
+use craft\commerce\base\RequestResponseInterface;
+use craft\commerce\errors\TransactionException;
 use craft\commerce\models\Address;
 use craft\commerce\models\ShippingMethod;
+use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
+use craft\commerce\records\Transaction as TransactionRecord;
 use craft\helpers\Json;
+use superbig\vipps\responses\CallbackResponse;
 use superbig\vipps\Vipps;
 
 use Craft;
 use craft\web\Controller;
 use yii\web\HttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -69,16 +75,106 @@ class CallbackController extends Controller
     }
 
     /**
+     * @param null $orderId
+     *
      * @return mixed
+     * @throws HttpException
+     * @throws \craft\commerce\errors\TransactionException
      */
     public function actionComplete($orderId = null)
     {
         $payload = $this->getPayload();
         $order   = Plugin::getInstance()->getOrders()->getOrderByNumber($orderId) ?? Plugin::getInstance()->getOrders()->getOrderById($orderId);
 
+        if (!$order) {
+            throw new NotFoundHttpException('Could not find order.', 401);
+        }
+
+        if ($order->getIsPaid()) {
+            return $this->asJson([
+                'success' => true,
+            ]);
+        }
+
+        $transactions = array_filter($order->getTransactions(),
+            function($transaction) {
+                /** @var $transaction Transaction */
+                return $transaction->status === TransactionRecord::STATUS_REDIRECT;
+            }
+        );
+        $transaction  = end($transactions);
+
+        // If it's successful already, we're good.
+        if (Plugin::getInstance()->getTransactions()->isTransactionSuccessful($transaction)) {
+            return true;
+        }
+
+        $response = new CallbackResponse($payload);
+
+        if ($response->isExpress()) {
+            // TODO: Handle express callback
+        }
+
+        $childTransaction = Plugin::getInstance()->getTransactions()->createTransaction(null, $transaction);
+        $this->_updateTransaction($childTransaction, $response);
+
+        // Success can mean 2 things in this context.
+        // 1) The transaction completed successfully with the gateway, and is now marked as complete.
+        // 2) The result of the gateway request was successful but also got a redirect response. We now need to redirect if $redirect is not null.
+        $success = $response->isSuccessful() || $response->isProcessing();
+
+        if ($success && $transaction->status === TransactionRecord::STATUS_SUCCESS) {
+            $transaction->order->updateOrderPaidInformation();
+        }
+
         return $this->asJson([
             'success' => true,
         ]);
+    }
+
+    /**
+     * Save a transaction.
+     *
+     * @param Transaction $child
+     *
+     * @throws TransactionException
+     */
+    private function _saveTransaction($child)
+    {
+        if (!Plugin::getInstance()->getTransactions()->saveTransaction($child)) {
+            throw new TransactionException('Error saving transaction: ' . implode(', ', $child->errors));
+        }
+    }
+
+    /**
+     * Updates a transaction.
+     *
+     * @param Transaction              $transaction
+     * @param RequestResponseInterface $response
+     *
+     * @throws TransactionException
+     */
+    private function _updateTransaction(Transaction $transaction, RequestResponseInterface $response)
+    {
+        if ($response->isRedirect()) {
+            $transaction->status = TransactionRecord::STATUS_REDIRECT;
+        }
+        elseif ($response->isSuccessful()) {
+            $transaction->status = TransactionRecord::STATUS_SUCCESS;
+        }
+        elseif ($response->isProcessing()) {
+            $transaction->status = TransactionRecord::STATUS_PROCESSING;
+        }
+        else {
+            $transaction->status = TransactionRecord::STATUS_FAILED;
+        }
+
+        $transaction->response  = $response->getData();
+        $transaction->code      = $response->getCode();
+        $transaction->reference = $response->getTransactionReference();
+        $transaction->message   = $response->getMessage();
+
+        $this->_saveTransaction($transaction);
     }
 
     /**

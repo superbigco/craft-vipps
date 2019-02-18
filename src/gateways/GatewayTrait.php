@@ -10,10 +10,13 @@
 
 namespace superbig\vipps\gateways;
 
+use craft\commerce\base\RequestResponseInterface;
 use craft\commerce\models\payments\OffsitePaymentForm;
 use craft\commerce\models\PaymentSource;
 use craft\commerce\models\payments\BasePaymentForm;
+use craft\commerce\models\Transaction;
 use craft\web\Response as WebResponse;
+use yii\base\NotSupportedException;
 
 /**
  * @author    Superbig
@@ -81,6 +84,19 @@ trait GatewayTrait
     }
 
     /**
+     * Complete the authorization for offsite payments.
+     *
+     * @param Transaction $transaction The transaction
+     *
+     * @return RequestResponseInterface
+     * @throws NotSupportedException
+     */
+    public function completeAuthorize(Transaction $transaction): RequestResponseInterface
+    {
+        throw new NotSupportedException(Craft::t('commerce', 'Complete Authorize is not supported by this gateway'));
+    }
+
+    /**
      * Returns true if gateway supports authorize requests.
      *
      * @return bool
@@ -107,7 +123,7 @@ trait GatewayTrait
      */
     public function supportsCompleteAuthorize(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -117,7 +133,7 @@ trait GatewayTrait
      */
     public function supportsCompletePurchase(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -137,7 +153,7 @@ trait GatewayTrait
      */
     public function supportsPurchase(): bool
     {
-        return true;
+        return false;
     }
 
     /**
