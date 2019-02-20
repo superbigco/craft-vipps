@@ -10,6 +10,8 @@
 
 namespace superbig\vipps\controllers;
 
+use craft\commerce\errors\PaymentException;
+use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
 use superbig\vipps\models\PaymentRequestModel;
 use superbig\vipps\Vipps;
@@ -49,19 +51,29 @@ class ExpressController extends Controller
      */
     public function actionCheckout()
     {
-        $request     = Craft::$app->getRequest();
-        $settings    = Vipps::$plugin->getSettings();
-        $cartService = Plugin::getInstance()->getCarts();
-        $cart        = $cartService->getCart(true);
-        $lineItems   = $cart->getLineItems();
+        $request       = Craft::$app->getRequest();
+        $settings      = Vipps::$plugin->getSettings();
+        $commerce      = Plugin::getInstance();
+        $cartService   = $commerce->getCarts();
+        $order         = $cartService->getCart(true);
+        $lineItems     = $order->getLineItems();
+        $vippsPayments = Vipps::$plugin->getPayments();
+        $gateway       = $vippsPayments->getGateway();
+        $paymentForm   = $gateway->getPaymentFormModel();
+        $session       = Craft::$app->getSession();
+        $customError   = '';
+
+        $vippsPayments->setIsExpress();
 
         if ($purchasables = $request->getParam('purchasables')) {
             if ($settings->newCartOnExpressCheckout && !empty($lineItems)) {
                 // Clean out cart
                 $cartService->forgetCart();
 
-                $cart = $cartService->getCart(true);
+                $order = $cartService->getCart(true);
             }
+
+            $lineItemService = $commerce->getLineItems();
 
             foreach ($purchasables as $key => $purchasable) {
                 $purchasableId = $request->getRequiredParam("purchasables.{$key}.id");
@@ -71,7 +83,7 @@ class ExpressController extends Controller
 
                 // Ignore zero value qty for multi-add forms https://github.com/craftcms/commerce/issues/330#issuecomment-384533139
                 if ($qty > 0) {
-                    $lineItem = Plugin::getInstance()->getLineItems()->resolveLineItem($cart->id, $purchasableId, $options);
+                    $lineItem = $lineItemService->resolveLineItem($order->id, $purchasableId, $options);
 
                     // New line items already have a qty of one.
                     if ($lineItem->id) {
@@ -82,22 +94,108 @@ class ExpressController extends Controller
                     }
 
                     $lineItem->note = $note;
-                    $cart->addLineItem($lineItem);
+                    $order->addLineItem($lineItem);
 
-                    Craft::$app->getElements()->saveElement($cart);
+                    Craft::$app->getElements()->saveElement($order);
                 }
             }
         }
+        $order->setGatewayId($gateway->id);
 
-        $paymentRequest = new PaymentRequestModel([
-            'order' => $cart,
-        ]);
-        $response       = Vipps::$plugin->payments->initiatePayment($paymentRequest);
+        $originalTotalPrice       = $order->getOutstandingBalance();
+        $originalTotalQty         = $order->getTotalQty();
+        $originalTotalAdjustments = \count($order->getAdjustments());
 
-        if ($paymentRequest->hasErrors()) {
+        // Do one final save to confirm the price does not change out from under the customer. Also removes any out of stock items etc.
+        // This also confirms the products are available and discounts are current.
+        $order->recalculate();
 
+        // Save the orders new values.
+        if (Craft::$app->getElements()->saveElement($order)) {
+            $totalPriceChanged       = $originalTotalPrice !== $order->getOutstandingBalance();
+            $totalQtyChanged         = $originalTotalQty !== $order->getTotalQty();
+            $totalAdjustmentsChanged = $originalTotalAdjustments !== \count($order->getAdjustments());
+
+            // Has the order changed in a significant way?
+            if ($totalPriceChanged || $totalQtyChanged || $totalAdjustmentsChanged) {
+                if ($totalPriceChanged) {
+                    $order->addError('totalPrice', Craft::t('commerce', 'The total price of the order changed.'));
+                }
+
+                if ($totalQtyChanged) {
+                    $order->addError('totalQty', Craft::t('commerce', 'The total quantity of items within the order changed.'));
+                }
+
+                if ($totalAdjustmentsChanged) {
+                    $order->addError('totalAdjustments', Craft::t('commerce', 'The total number of order adjustments changed.'));
+                }
+
+                $customError = Craft::t('commerce', 'Something changed with the order before payment, please review your order and submit payment again.');
+
+                if ($request->getAcceptsJson()) {
+                    return $this->asErrorJson($customError);
+                }
+
+                $session->setError($customError);
+                Craft::$app->getUrlManager()->setRouteParams(compact('paymentForm'));
+
+                return null;
+            }
+        }
+        $redirect    = '';
+        $transaction = null;
+
+        if (!$paymentForm->hasErrors() && !$order->hasErrors()) {
+            try {
+                $commerce->getPayments()->processPayment($order, $paymentForm, $redirect, $transaction);
+                $success = true;
+            } catch (PaymentException $exception) {
+                $customError = $exception->getMessage();
+                $success     = false;
+            }
+        }
+        else {
+            $customError = Craft::t('commerce', 'Invalid payment or order. Please review.');
+            $success     = false;
         }
 
-        return $this->redirect($response['url']);
+        if (!$success) {
+            if ($request->getAcceptsJson()) {
+                return $this->asJson(['error' => $customError, 'paymentForm' => $paymentForm->getErrors()]);
+            }
+
+            $session->setError($customError);
+            Craft::$app->getUrlManager()->setRouteParams(compact('paymentForm'));
+
+            return null;
+        }
+
+        if ($request->getAcceptsJson()) {
+            $response = ['success' => true];
+
+            if ($redirect) {
+                $response['redirect'] = $redirect;
+            }
+
+            if ($transaction) {
+                /** @var Transaction $transaction */
+                $response['transactionId'] = $transaction->reference;
+            }
+
+            return $this->asJson($response);
+        }
+
+        //$paymentRequest = new PaymentRequestModel([
+        //    'order' => $order,
+        //]);
+        //$response       = Vipps::$plugin->payments->initiatePayment($paymentRequest);
+
+        /*if ($paymentRequest->hasErrors()) {
+
+        }*/
+
+        return $this->redirect($redirect);
+
+        //return $this->redirect($response['url']);
     }
 }

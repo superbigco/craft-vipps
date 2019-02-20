@@ -83,26 +83,20 @@ class CallbackController extends Controller
      */
     public function actionComplete($orderId = null)
     {
-        $payload = $this->getPayload();
-        $order   = Plugin::getInstance()->getOrders()->getOrderByNumber($orderId) ?? Plugin::getInstance()->getOrders()->getOrderById($orderId);
+        $payload     = $this->getPayload();
+        $transaction = Vipps::$plugin->getPayments()->getTransactionByShortId($orderId);
 
-        if (!$order) {
-            throw new NotFoundHttpException('Could not find order.', 401);
+        if (!$transaction) {
+            throw new NotFoundHttpException('Could not find transaction.', 401);
         }
+
+        $order = $transaction->getOrder();
 
         if ($order->getIsPaid()) {
             return $this->asJson([
                 'success' => true,
             ]);
         }
-
-        $transactions = array_filter($order->getTransactions(),
-            function($transaction) {
-                /** @var $transaction Transaction */
-                return $transaction->status === TransactionRecord::STATUS_REDIRECT;
-            }
-        );
-        $transaction  = end($transactions);
 
         // If it's successful already, we're good.
         if (Plugin::getInstance()->getTransactions()->isTransactionSuccessful($transaction)) {

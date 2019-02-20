@@ -79,12 +79,13 @@ class Install extends Migration
             $this->createTable(
                 PaymentRecord::tableName(),
                 [
-                    'id'          => $this->primaryKey(),
-                    'dateCreated' => $this->dateTime()->notNull(),
-                    'dateUpdated' => $this->dateTime()->notNull(),
-                    'uid'         => $this->uid(),
-                    'orderId'     => $this->integer()->notNull(),
-                    'shortId'     => $this->string(255)->notNull()->defaultValue(''),
+                    'id'                   => $this->primaryKey(),
+                    'dateCreated'          => $this->dateTime()->notNull(),
+                    'dateUpdated'          => $this->dateTime()->notNull(),
+                    'uid'                  => $this->uid(),
+                    'orderId'              => $this->integer()->notNull(),
+                    'transactionReference' => $this->string(255)->notNull()->defaultValue(''),
+                    'shortId'              => $this->string(255)->notNull()->defaultValue(''),
                 ]
             );
         }
@@ -107,6 +108,18 @@ class Install extends Migration
             'shortId',
             true
         );
+
+        $this->createIndex(
+            $this->db->getIndexName(
+                PaymentRecord::tableName(),
+                'transactionReference',
+                true
+            ),
+            PaymentRecord::tableName(),
+            'transactionReference',
+            true
+        );
+
         // Additional commands depending on the db driver
         switch ($this->driver) {
             case DbConfig::DRIVER_MYSQL:

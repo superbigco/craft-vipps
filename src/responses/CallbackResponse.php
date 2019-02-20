@@ -67,7 +67,7 @@ class CallbackResponse implements RequestResponseInterface
      */
     public function isSuccessful(): bool
     {
-        return !array_key_exists('callbackErrorInfo', $this->data);
+        return !isset($this->data['errorInfo']) && !isset($this->data['callbackErrorInfo']) && strtolower($this->data['transactionInfo']['status']) !== 'cancelled';
     }
 
     /**

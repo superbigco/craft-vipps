@@ -80,6 +80,7 @@ class Gateway extends BaseGateway
      * @param string      $reference   Reference for the transaction being captured.
      *
      * @return RequestResponseInterface
+     * @throws \yii\base\Exception
      */
     public function capture(Transaction $transaction, string $reference): RequestResponseInterface
     {

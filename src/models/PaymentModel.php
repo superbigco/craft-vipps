@@ -35,6 +35,11 @@ class PaymentModel extends Model
      */
     public $orderId;
 
+    /**
+     * @var int
+     */
+    public $transactionReference;
+
     // Public Methods
     // =========================================================================
 
@@ -44,7 +49,7 @@ class PaymentModel extends Model
     public function rules()
     {
         return [
-            [['shortId', 'orderId'], 'required'],
+            [['shortId', 'orderId', 'transactionReference'], 'required'],
         ];
     }
 }

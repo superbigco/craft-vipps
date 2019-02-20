@@ -11,8 +11,10 @@
 namespace superbig\vipps\models;
 
 use craft\commerce\elements\Order;
+use craft\commerce\models\Transaction;
 use craft\helpers\UrlHelper;
 use DateTime;
+use superbig\vipps\helpers\StringHelper;
 use superbig\vipps\Vipps;
 
 use Craft;
@@ -23,9 +25,10 @@ use craft\base\Model;
  * @package   Vipps
  * @since     1.0.0
  *
- * @property string $mobileNumber The account to send Vipps request to
- * @property Order  $order
- * @property float  $amount       Total amount in minor units (øre)
+ * @property string      $mobileNumber The account to send Vipps request to
+ * @property Order       $order
+ * @property Transaction $transaction
+ * @property float       $amount       Total amount in minor units (øre)
  */
 class PaymentRequestModel extends Model
 {
@@ -46,13 +49,22 @@ class PaymentRequestModel extends Model
     public  $amount;
     public  $orderId;
     public  $order;
+    public  $transaction;
     private $_lineItems;
     private $_transactionText;
+    private $transactionShortId;
     private $_url;
     private $_gateway;
 
     // Public Methods
     // =========================================================================
+
+    public function init()
+    {
+        parent::init();
+
+        $this->transactionShortId = StringHelper::transactionId();
+    }
 
     public function getPayload()
     {
@@ -88,7 +100,7 @@ class PaymentRequestModel extends Model
             'transaction'  =>
                 [
                     'amount'          => $orderTotalMinorUnit, // In øre
-                    'orderId'         => $orderId,
+                    'orderId'         => $this->getTransactionShortId(),
                     'timeStamp'       => $timestamp,
                     'transactionText' => $this->getTransactionText(),
                 ],
@@ -102,6 +114,21 @@ class PaymentRequestModel extends Model
         }
 
         return $this->_transactionText;
+    }
+
+
+    public function getTransactionShortId(): string
+    {
+        return $this->transactionShortId;
+    }
+
+    public function getPaymentRecord(): PaymentModel
+    {
+        return new PaymentModel([
+            'shortId'              => $this->getTransactionShortId(),
+            'orderId'              => $this->order->id,
+            'transactionReference' => $this->getTransactionShortId(),
+        ]);
     }
 
     public function setType($type)

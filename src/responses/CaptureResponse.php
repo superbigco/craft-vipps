@@ -67,7 +67,7 @@ class CaptureResponse implements RequestResponseInterface
      */
     public function isSuccessful(): bool
     {
-        return !array_key_exists('errorInfo', $this->data);
+        return !isset($this->data[0]['errorGroup']);
     }
 
     /**
@@ -138,7 +138,11 @@ class CaptureResponse implements RequestResponseInterface
      */
     public function getCode(): string
     {
-        return $this->data['errorInfo']['errorCode'] ?? '200';
+        if (isset($this->data[0]['errorGroup'])) {
+            return $this->data[0]['errorCode'];
+        }
+
+        return '200';
     }
 
     /**
@@ -158,7 +162,11 @@ class CaptureResponse implements RequestResponseInterface
      */
     public function getMessage(): string
     {
-        return $this->data['errorInfo']['errorMessage'] ?? $this->data['transaction']['transactionText'] ?? '';
+        if (isset($this->data[0]['errorMessage'])) {
+            return $this->data[0]['errorMessage'];
+        }
+
+        return $this->data['transactionInfo']['transactionText'] ?? '';
     }
 
     /**
