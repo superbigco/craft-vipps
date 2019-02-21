@@ -22,35 +22,29 @@ use craft\base\Model;
  * @author    Superbig
  * @package   Vipps
  * @since     1.0.0
+ *
+ * @property BadResponseException $exception
+ * @property array                $data
+ * @property string               $_redirect
+ * @property bool                 $_processing
  */
 class ErrorResponse implements RequestResponseInterface
 {
-    /**
-     * @var
-     */
     protected $exception;
-
-    /**
-     * @var
-     */
-    protected $data = [];
-    /**
-     * @var string
-     */
-    private $_redirect = '';
-    /**
-     * @var bool
-     */
-    private $_processing = false;
+    private   $orderId     = '';
+    protected $data        = [];
+    private   $_redirect   = '';
+    private   $_processing = false;
 
     /**
      * Response constructor.
      *
      * @param BadResponseException $exception
      */
-    public function __construct(BadResponseException $exception)
+    public function __construct(BadResponseException $exception, $orderId = '')
     {
         $this->exception = $exception;
+        $this->orderId   = $orderId;
         $this->data      = $exception->hasResponse() ? Json::decodeIfJson((string)$exception->getResponse()->getBody()) : [];
     }
 
@@ -132,11 +126,7 @@ class ErrorResponse implements RequestResponseInterface
      */
     public function getTransactionReference(): string
     {
-        if (empty($this->data)) {
-            return '';
-        }
-
-        return (string)$this->data['orderId'];
+        return $this->orderId;
     }
 
     /**
@@ -146,7 +136,7 @@ class ErrorResponse implements RequestResponseInterface
      */
     public function getCode(): string
     {
-        return '200';
+        return $this->exception->getCode();
     }
 
     /**
@@ -166,7 +156,7 @@ class ErrorResponse implements RequestResponseInterface
      */
     public function getMessage(): string
     {
-        return 'Message';
+        return $this->data['errorMessage'] ?? '';
     }
 
     /**
@@ -176,6 +166,6 @@ class ErrorResponse implements RequestResponseInterface
      */
     public function redirect()
     {
-        return Craft::$app->getResponse()->redirect($this->_redirect)->send();
+        return false;
     }
 }
