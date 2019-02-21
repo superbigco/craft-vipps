@@ -136,15 +136,33 @@ class Payments extends Component
 
     }
 
-    public function captureFromGateway(Transaction $transaction): PaymentResponse
+    /**
+     * @param Transaction $transaction
+     *
+     * @return CaptureResponse
+     * @throws Exception
+     */
+    public function captureFromGateway(Transaction $transaction): CaptureResponse
     {
-        $order          = $transaction->getOrder();
-        $paymentRequest = new PaymentRequestModel([
-            'order' => $order,
-            'type'  => PaymentRequestModel::TYPE_CAPTURE,
+        $order                = $transaction->getOrder();
+        $authorizedTransation = $this->getSuccessfulTransactionForOrder($order);
+        $parentTransaction    = $authorizedTransation->getParent();
+        $gateway              = $this->getGateway();
+        //$amount            = (int)$transaction->amount * 100;
+        $amount   = 0;
+        $response = Vipps::$plugin->api->post("/ecomm/v2/payments/{$parentTransaction->reference}/capture", [
+            'merchantInfo' => [
+                'merchantSerialNumber' => $gateway->merchantSerialNumber,
+            ],
+            'transaction'  => [
+                'amount'          => $amount,
+                // TODO: Set from status message?
+                'transactionText' => $order->getEmail(),
+            ],
         ]);
 
-        $request = $this->initiatePayment($paymentRequest);
+        return new CaptureResponse($response);
+    }
 
         return $request;
     }
