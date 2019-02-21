@@ -29,7 +29,7 @@ class VippsVariable
     // Public Methods
     // =========================================================================
 
-    public function getExpressButton($purchasable, $config = [])
+    public function getExpressButton($purchasable = null, $config = [])
     {
         $html = Vipps::$plugin->express->getButton($purchasable, $config = []);
 

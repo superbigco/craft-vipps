@@ -55,17 +55,23 @@ class Express extends Component
             $purchasable = $purchasable;
         }
 
-        $data  = array_filter([
-            'id'      => $purchasable->id,
+        $data    = array_filter([
+            'id'      => $purchasable->id ?? null,
             'qty'     => $config['quantity'] ?? 1,
             'note'    => $config['note'] ?? null,
             'options' => $config['options'] ?? [],
         ]);
-        $class = $config['class'] ?? null;
-        $url   = UrlHelper::siteUrl('vipps/express/checkout', [
+        $class   = $config['class'] ?? null;
+        $payload = [
             'purchasables' => [$data],
-        ]);
-        $html  = $view->renderTemplate('vipps/_components/express/button', [
+        ];
+
+        if (!$purchasable) {
+            $payload = [];
+        }
+
+        $url  = UrlHelper::siteUrl('vipps/express/checkout', $payload);
+        $html = $view->renderTemplate('vipps/_components/express/button', [
             'url'         => $url,
             'class'       => $class,
             'title'       => '',
