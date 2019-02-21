@@ -15,17 +15,20 @@ use craft\commerce\elements\Variant;
 use craft\commerce\models\LineItem;
 use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
+use craft\commerce\records\Transaction as TransactionRecord;
 use craft\db\Query;
 use craft\helpers\UrlHelper;
 use superbig\vipps\gateways\Gateway;
 use superbig\vipps\models\PaymentModel;
 use superbig\vipps\models\PaymentRequestModel;
 use superbig\vipps\records\PaymentRecord;
+use superbig\vipps\responses\CaptureResponse;
 use superbig\vipps\responses\PaymentResponse;
 use superbig\vipps\Vipps;
 
 use Craft;
 use craft\base\Component;
+use yii\base\Exception;
 
 /**
  * @author    Superbig
@@ -34,12 +37,15 @@ use craft\base\Component;
  */
 class Payments extends Component
 {
+    private $_express;
+
     // Public Methods
     // =========================================================================
 
     /*
      * @return mixed
      */
+
     public function init()
     {
     }
@@ -64,17 +70,33 @@ class Payments extends Component
         return Plugin::getInstance()->getOrders()->getOrderById($orderId);
     }
 
-    public function savePayment(PaymentModel $payment)
+    public function getTransactionByShortId(string $shortId = null)
+    {
+        $reference = (new Query())
+            ->from(PaymentRecord::tableName())
+            ->select('transactionReference')
+            ->where('shortId = :shortId', [':shortId' => $shortId])
+            ->scalar();
+
+        if (!$reference) {
+            return null;
+        }
+
+        return Plugin::getInstance()->getTransactions()->getTransactionByReferenceAndStatus($reference, TransactionRecord::STATUS_REDIRECT);
+    }
+
+    public function savePayment(PaymentModel $payment): bool
     {
         $query = (new Query())
             ->createCommand()
             ->upsert(PaymentRecord::tableName(), [
-                'orderId' => $payment->orderId,
-                'shortId' => $payment->shortId,
+                'orderId'              => $payment->orderId,
+                'shortId'              => $payment->shortId,
+                'transactionReference' => $payment->transactionReference,
             ])
             ->execute();
 
-        return true;
+        return $query;
     }
 
     public function initiatePayment(PaymentRequestModel $paymentRequest)
@@ -91,9 +113,16 @@ class Payments extends Component
     {
         $order          = $transaction->getOrder();
         $paymentRequest = new PaymentRequestModel([
-            'order' => $order,
-            'type'  => PaymentRequestModel::TYPE_REGULAR,
+            'order'       => $order,
+            'transaction' => $transaction,
+            'type'        => PaymentRequestModel::TYPE_REGULAR,
         ]);
+
+        $this->savePayment($paymentRequest->getPaymentRecord());
+
+        if ($this->getIsExpress()) {
+            $paymentRequest->setType(PaymentRequestModel::TYPE_EXPRESS);
+        }
 
         $request  = $this->initiatePayment($paymentRequest);
         $url      = $request['url'] ?? null;
@@ -184,10 +213,42 @@ class Payments extends Component
     public function getGateway(): Gateway
     {
         $gateways = Plugin::getInstance()->getGateways()->getAllCustomerEnabledGateways();
-
-        return collect($gateways)
+        $gateway  = collect($gateways)
             ->first(function($gateway) {
                 return $gateway instanceof Gateway;
             });
+
+        if (!$gateway) {
+            throw new Exception('The Vipps gateway is not setup correctly.');
+        }
+
+        return $gateway;
+    }
+
+    /**
+     * @param Order $order
+     *
+     * @return Transaction|null
+     */
+    public function getSuccessfulTransactionForOrder(Order $order)
+    {
+        return collect($order->getTransactions())
+            ->first(function(Transaction $transaction) {
+                return $transaction->status === TransactionRecord::STATUS_SUCCESS
+                    && $transaction->type === TransactionRecord::TYPE_AUTHORIZE
+                    && $transaction->parentId !== null;
+            });
+    }
+
+    public function getIsExpress(): bool
+    {
+        return (bool)$this->_express;
+    }
+
+    public function setIsExpress(bool $value = true)
+    {
+        $this->_express = $value;
+
+        return $this;
     }
 }

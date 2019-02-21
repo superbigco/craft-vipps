@@ -205,7 +205,7 @@ class CallbackController extends Controller
         $addressId     = $payload['addressId'] ?? null;
         $isFirst       = true;
         $currentHandle = $order->shippingMethodHandle;
-        $iso = $payload['country'];
+        $iso           = $payload['country'];
         $country       = Plugin::getInstance()->getCountries()->getCountryByIso('NO');
         $address       = new Address([
             'address1'  => $payload['addressLine1'],
