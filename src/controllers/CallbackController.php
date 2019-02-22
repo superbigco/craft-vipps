@@ -106,7 +106,22 @@ class CallbackController extends Controller
         $response = new CallbackResponse($payload);
 
         if ($response->isExpress()) {
-            // TODO: Handle express callback
+            $country         = Plugin::getInstance()->getCountries()->getCountryByIso('NO');
+            $shippingDetails = $payload['shippingDetails'];
+            $addressPayload  = $shippingDetails['address'];
+            $address         = new Address([
+                'address1'  => $addressPayload['addressLine1'],
+                'address2'  => $addressPayload['addressLine2'],
+                'city'      => $addressPayload['city'],
+                'zipCode'   => $addressPayload['zipCode'],
+                'countryId' => $country->id,
+            ]);
+
+            $order->setBillingAddress($address);
+            $order->setShippingAddress($address);
+            $order->shippingMethodHandle = $shippingDetails['shippingMethodId'];
+
+            Craft::$app->getElements()->saveElement($order, false);
         }
 
         $childTransaction = Plugin::getInstance()->getTransactions()->createTransaction(null, $transaction);
