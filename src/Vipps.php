@@ -13,6 +13,7 @@ namespace superbig\vipps;
 use craft\commerce\services\Gateways;
 use craft\web\twig\variables\CraftVariable;
 use superbig\vipps\gateways\Gateway;
+use superbig\vipps\helpers\StringHelper;
 use superbig\vipps\services\Api;
 use superbig\vipps\services\Payments as PaymentsService;
 use superbig\vipps\services\Express as ExpressService;
