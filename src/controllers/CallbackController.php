@@ -210,19 +210,19 @@ class CallbackController extends Controller
     {
         $payload = $this->getPayload();
 
-        $order = Plugin::getInstance()->getOrders()->getOrderByNumber($orderId) ?? Plugin::getInstance()->getOrders()->getOrderById($orderId);
-        /*$address = new Address([
-            'firstName' => $payload['firstName'],
-            'lastName'  => $payload['lastName'],
-            'address1'  => $payload['address1'],
-            'address2'  => $payload['address2'],
-        ]);*/
+        $transaction = Vipps::$plugin->getPayments()->getTransactionByShortId($orderId);
+
+        if (!$transaction) {
+            throw new NotFoundHttpException('Could not find transaction.', 401);
+        }
+
+        $order         = $transaction->getOrder();
         $addressId     = $payload['addressId'] ?? null;
         $isFirst       = true;
         $currentHandle = $order->shippingMethodHandle;
-        $iso           = $payload['country'];
-        $country       = Plugin::getInstance()->getCountries()->getCountryByIso('NO');
-        $address       = new Address([
+        // $iso           = $payload['country'];
+        $country = Plugin::getInstance()->getCountries()->getCountryByIso('NO');
+        $address = new Address([
             'address1'  => $payload['addressLine1'],
             'address2'  => $payload['addressLine2'],
             'city'      => $payload['city'],
@@ -230,6 +230,7 @@ class CallbackController extends Controller
             'countryId' => $country->id,
         ]);
 
+        $order->setBillingAddress($address);
         $order->setShippingAddress($address);
 
         $methods = array_map(function(ShippingMethod $method) use ($order, &$isFirst, $currentHandle) {
@@ -265,7 +266,7 @@ class CallbackController extends Controller
         $result = [
             'addressId'       => \intval($addressId),
             'orderId'         => $orderId,
-            'shippingDetails' => $methods,
+            'shippingDetails' => array_values($methods),
         ];
 
         return $this->asJson($result);
