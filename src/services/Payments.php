@@ -164,7 +164,34 @@ class Payments extends Component
         return new CaptureResponse($response);
     }
 
-        return $request;
+    /**
+     * @param Transaction $transaction
+     *
+     * @return CaptureResponse
+     * @throws Exception
+     */
+    public function refundFromGateway(Transaction $transaction): CaptureResponse
+    {
+        $order                = $transaction->getOrder();
+        $authorizedTransation = $this->getSuccessfulTransactionForOrder($order);
+        $parentTransaction    = $authorizedTransation->getParent();
+        $gateway              = $this->getGateway();
+        $amount               = (int)$transaction->amount * 100;
+        $transactionText      = !empty($transaction->note) ? $transaction->note : $order->getEmail();
+        dd($parentTransaction->reference, $amount, $transactionText);
+        $response = Vipps::$plugin->api->post("/ecomm/v2/payments/{$parentTransaction->reference}/refund", [
+            'merchantInfo' => [
+                'merchantSerialNumber' => $gateway->merchantSerialNumber,
+            ],
+            'transaction'  => [
+                'amount'          => $amount,
+                // TODO: Set from status message?
+                'transactionText' => $transactionText,
+            ],
+        ]);
+
+
+        return new CaptureResponse($response);
     }
 
     public function paymentStatus($orderId = null)

@@ -121,10 +121,13 @@ class Gateway extends BaseGateway
      * @param Transaction $transaction The refund transaction
      *
      * @return RequestResponseInterface
+     * @throws \yii\base\Exception
      */
     public function refund(Transaction $transaction): RequestResponseInterface
     {
-        // TODO: Implement refund() method.
+        $response = Vipps::$plugin->getPayments()->refundFromGateway($transaction);
+
+        return $response;
     }
 
     public function getAuthToken()
