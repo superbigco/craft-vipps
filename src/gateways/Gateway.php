@@ -12,8 +12,10 @@ namespace superbig\vipps\gateways;
 
 use craft\commerce\base\Gateway as BaseGateway;
 use craft\commerce\base\RequestResponseInterface;
+use craft\commerce\models\OrderStatus;
 use craft\commerce\models\payments\BasePaymentForm;
 use craft\commerce\models\Transaction;
+use craft\commerce\Plugin;
 use craft\helpers\StringHelper;
 use superbig\vipps\Vipps;
 
@@ -46,6 +48,8 @@ class Gateway extends BaseGateway
     public $newCartOnExpressCheckout     = true;
     public $fallbackUrl                  = '';
     public $authToken                    = '';
+    public $captureOnStatusChange        = false;
+    public $captureStatusUid             = '';
 
     /**
      * @inheritdoc
@@ -143,6 +147,7 @@ class Gateway extends BaseGateway
         return Craft::$app->getView()->renderTemplate('vipps/gatewaySettings', [
             'gateway'   => $this,
             'authToken' => $this->getAuthToken(),
+            'statuses'  => $this->getOrderStatuses(),
         ]);
     }
 
@@ -151,6 +156,16 @@ class Gateway extends BaseGateway
         return [
             'authorize' => Craft::t('commerce', 'Authorize Only (Manually Capture)'),
         ];
+    }
+
+    public function getOrderStatuses()
+    {
+        return array_map(function(OrderStatus $orderStatus) {
+            return [
+                'label' => $orderStatus->name,
+                'value' => $orderStatus->uid,
+            ];
+        }, Plugin::getInstance()->getOrderStatuses()->getAllOrderStatuses());
     }
 
     public function rules()

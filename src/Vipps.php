@@ -11,6 +11,7 @@
 namespace superbig\vipps;
 
 use craft\commerce\services\Gateways;
+use craft\commerce\services\OrderHistories;
 use craft\web\twig\variables\CraftVariable;
 use superbig\vipps\gateways\Gateway;
 use superbig\vipps\helpers\StringHelper;

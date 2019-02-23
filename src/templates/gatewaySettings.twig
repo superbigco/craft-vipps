@@ -1,4 +1,4 @@
-{% from "_includes/forms" import textField, lightswitchField %}
+{% from "_includes/forms" import textField, lightswitchField, selectField %}
 
 {{ textField({
     label: "Client Id"|t('vipps'),
@@ -95,6 +95,24 @@
     errors: gateway.getErrors('testMode'),
 }) }}
 
+{{ lightswitchField({
+    label: "Capture on status change"|t('vipps'),
+    description: "This will enable the gateway to automatically capture on a status change - say when you change from _New_ to _Shipped_"|t('vipps'),
+    name: 'captureOnStatusChange',
+    on: gateway.captureOnStatusChange,
+    errors: gateway.getErrors('captureOnStatusChange'),
+}) }}
+
+
+{{ selectField({
+    label: "Capture status"|t("vipps"),
+    instructions: "Status for automatic capture."|t("vipps"),
+    id: 'captureStatusUid',
+    name: 'captureStatusUid',
+    value: gateway.captureStatusUid,
+    options: statuses,
+    errors: gateway.getErrors('captureStatusUid')
+}) }}
 
 {{ lightswitchField({
     label: "Create user on express checkout"|t('vipps'),

@@ -12,6 +12,7 @@ namespace superbig\vipps\services;
 
 use craft\commerce\elements\Order;
 use craft\commerce\elements\Variant;
+use craft\commerce\events\OrderStatusEvent;
 use craft\commerce\models\LineItem;
 use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
@@ -217,7 +218,46 @@ class Payments extends Component
         dd($response);
     }
 
-    public function handleCallback($payload = [])
+    public function onStatusChange(OrderStatusEvent $e)
+    {
+        try {
+            $gateway = $this->getGateway();
+
+            if ($gateway && $gateway->captureOnStatusChange) {
+                $order = $e->order;
+
+                if ($gateway->captureStatusUid === $e->orderHistory->getNewStatus()->uid) {
+                    $transaction = $this->getSuccessfulTransactionForOrder($order);
+
+                    if ($transaction->canCapture()) {
+                        // capture transaction and display result
+                        $child = Plugin::getInstance()->getPayments()->captureTransaction($transaction);
+
+                        $message = $child->message ? ' (' . $child->message . ')' : '';
+
+                        if ($child->status === TransactionRecord::STATUS_SUCCESS) {
+                            $child->order->updateOrderPaidInformation();
+                            Craft::$app->getSession()->setNotice(Craft::t('commerce', 'Transaction captured successfully: {message}', [
+                                'message' => $message,
+                            ]));
+                        }
+                        else {
+                            Craft::$app->getSession()->setError(Craft::t('commerce', 'Couldn’t capture transaction: {message}', [
+                                'message' => $message,
+                            ]));
+                        }
+                    }
+                    else {
+                        Craft::$app->getSession()->setError(Craft::t('commerce', 'Couldn’t capture transaction.', ['id' => $transaction->id]));
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+
+        }
+    }
+
+    public function createResponseFromCallback($payload = [])
     {
         // https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api.md#callback
     }
