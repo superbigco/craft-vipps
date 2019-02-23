@@ -179,7 +179,7 @@ class Payments extends Component
         $gateway              = $this->getGateway();
         $amount               = (int)$transaction->amount * 100;
         $transactionText      = !empty($transaction->note) ? $transaction->note : $order->getEmail();
-        dd($parentTransaction->reference, $amount, $transactionText);
+        //dd($parentTransaction->reference, $amount, $transactionText);
         $response = Vipps::$plugin->api->post("/ecomm/v2/payments/{$parentTransaction->reference}/refund", [
             'merchantInfo' => [
                 'merchantSerialNumber' => $gateway->merchantSerialNumber,

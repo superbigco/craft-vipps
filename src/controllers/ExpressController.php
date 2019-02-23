@@ -168,7 +168,7 @@ class ExpressController extends Controller
             $session->setError($customError);
             Craft::$app->getUrlManager()->setRouteParams(compact('paymentForm'));
 
-            return null;
+            return $this->goBack();
         }
 
         if ($request->getAcceptsJson()) {
@@ -186,17 +186,6 @@ class ExpressController extends Controller
             return $this->asJson($response);
         }
 
-        //$paymentRequest = new PaymentRequestModel([
-        //    'order' => $order,
-        //]);
-        //$response       = Vipps::$plugin->payments->initiatePayment($paymentRequest);
-
-        /*if ($paymentRequest->hasErrors()) {
-
-        }*/
-
         return $this->redirect($redirect);
-
-        //return $this->redirect($response['url']);
     }
 }
