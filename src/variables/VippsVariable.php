@@ -29,15 +29,39 @@ class VippsVariable
     // Public Methods
     // =========================================================================
 
-    public function getExpressButton($purchasable = null, $config = [])
+    public function getOrderDetails(Order $order)
+    {
+        return Vipps::$plugin->getPayments()->getOrderDetails($order);
+    }
+
+    /**
+     * @param null  $purchasable
+     * @param array $config
+     *
+     * @return \Twig_Markup
+     */
+    public function getExpressButton($purchasable = null, array $config = []): \Twig_Markup
     {
         $html = Vipps::$plugin->express->getButton($purchasable, $config = []);
 
         return Template::raw($html);
     }
 
-    public function getExpressFormButton()
+    public function getExpressUrl($purchasable = null, array $config = []): string
     {
-        return Vipps::$plugin->express->getFormButton();
+        return Vipps::$plugin->express->getCheckoutUrl($purchasable, $config);
+    }
+
+    /**
+     * @param null  $purchasable
+     * @param array $config
+     *
+     * @return \Twig_Markup
+     */
+    public function getExpressFormButton($purchasable = null, array $config = []): \Twig_Markup
+    {
+        $html = Vipps::$plugin->express->getFormButton($purchasable, $config);
+
+        return Template::raw($html);
     }
 }

@@ -1,7 +1,26 @@
-<form action="{{ siteUrl('vipps/express/checkout') }}">
-    <input type="hidden" name="purchasableId" value="{{ purchasableId }}">
+{% set iconUrl = view.getAssetManager().getPublishedUrl('@superbig/vipps/assetbundles/vippsexpress/dist', true) ~ '/img/hurtigkasse.svg' %}
+{% set expressButtonId = 'jsVippsExpressButton' ~ random(2000, 9999) %}
+<button class="vipps-express-checkout" type="button" id="{{ expressButtonId }}">
+    <img alt="{{ title }}" border=0 src="{{ iconUrl }}">
+</button>
 
-    {% if variantId is defined %}
-        <input type="hidden" name="variantId" value="{{ variantId }}">
-    {% endif %}
-</form>
+{% js %}
+    const formUrl = '{{ siteUrl('vipps/express/checkout') }}';
+    const formId = '{{ expressButtonId ~ 'Form' }}';
+    const $button = document.getElementById('{{ expressButtonId }}');
+    const clickHandler = (e) => {
+        const $targetButton = e.currentTarget;
+        const $form = document.createElement('div');
+        $form.innerHTML = `
+            <form name="{{ expressButtonId ~ 'Form' }}" method="post" action="{{ siteUrl('vipps/express/checkout') }}">
+                {{ csrfInput() }}
+                <input type="hidden" name="purchasables[][id]" value="{{ purchasable.id }}">
+            </form>
+        `;
+
+        document.body.appendChild($form);
+        document[formId].submit();
+    }
+
+    $button.addEventListener('click', clickHandler);
+{% endjs %}

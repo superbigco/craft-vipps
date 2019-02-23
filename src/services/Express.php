@@ -71,22 +71,9 @@ class Express extends Component
             $purchasable = $purchasable;
         }
 
-        $data    = array_filter([
-            'id'      => $purchasable->id ?? null,
-            'qty'     => $config['quantity'] ?? 1,
-            'note'    => $config['note'] ?? null,
-            'options' => $config['options'] ?? [],
-        ]);
-        $class   = $config['class'] ?? null;
-        $payload = [
-            'purchasables' => [$data],
-        ];
+        $class = $config['class'] ?? null;
 
-        if (!$purchasable) {
-            $payload = [];
-        }
-
-        $url  = UrlHelper::siteUrl('vipps/express/checkout', $payload);
+        $url  = $this->getCheckoutUrl($purchasable, $config);
         $html = $view->renderTemplate('vipps/_components/express/button', [
             'url'         => $url,
             'class'       => $class,
@@ -99,19 +86,47 @@ class Express extends Component
         return $html;
     }
 
-    public function getFormButton(): string
+    public function getCheckoutUrl($purchasable = null, $config = []): string
+    {
+        $data    = array_filter([
+            'id'      => $purchasable->id ?? null,
+            'qty'     => $config['quantity'] ?? 1,
+            'note'    => $config['note'] ?? null,
+            'options' => $config['options'] ?? [],
+        ]);
+        $payload = [
+            'purchasables' => [$data],
+        ];
+
+        if (!$purchasable) {
+            $payload = [];
+        }
+
+        return UrlHelper::siteUrl('vipps/express/checkout', $payload);
+    }
+
+    public function getFormButton($purchasable = null, $config = []): string
     {
         $view    = Craft::$app->getView();
         $oldMode = $view->getTemplateMode();
         $view->setTemplateMode($view::TEMPLATE_MODE_CP);
 
+        $data  = array_filter([
+            'id'      => $purchasable->id ?? null,
+            'qty'     => $config['quantity'] ?? 1,
+            'note'    => $config['note'] ?? null,
+            'options' => $config['options'] ?? [],
+        ]);
+        $class = $config['class'] ?? null;
+
         $html = $view->renderTemplate('vipps/_components/express/form-button', [
-            'nonceUrl' => UrlHelper::siteUrl(''),
-            'title'    => '',
+            'class'       => $class,
+            'title'       => '',
+            'purchasable' => $purchasable,
         ]);
 
         $view->setTemplateMode($oldMode);
 
-        return Template::raw($html);
+        return $html;
     }
 }
