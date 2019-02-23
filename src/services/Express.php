@@ -10,8 +10,10 @@
 
 namespace superbig\vipps\services;
 
+use craft\commerce\adjusters\Shipping;
 use craft\commerce\base\Purchasable;
 use craft\commerce\Plugin;
+use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use superbig\vipps\models\PaymentRequestModel;
@@ -40,6 +42,20 @@ class Express extends Component
             'orderId' => $orderId,
             'amount'  => $orderTotalMinorUnit,
         ]);
+    }
+
+    public function onRegisterOrderAdjusters(RegisterComponentTypesEvent $e)
+    {
+        if (Vipps::$plugin->getPayments()->getIsExpress()) {
+            // When Commerce calls `Plugin::getInstance()->getOrderAdjustments()->getAdjusters()`
+            // it will get the first shipping adjuster if none is set
+            // This removes the adjustment, making sure the shipping is applied by the gateway
+            foreach ($e->types as $key => $adjuster) {
+                if ($adjuster instanceof Shipping) {
+                    unset($e->types[ $key ]);
+                }
+            }
+        }
     }
 
     public function getButton($purchasable = null, $config = []): string

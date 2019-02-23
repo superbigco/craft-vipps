@@ -11,6 +11,7 @@
 namespace superbig\vipps;
 
 use craft\commerce\services\Gateways;
+use craft\commerce\services\OrderAdjustments;
 use craft\commerce\services\OrderHistories;
 use craft\web\twig\variables\CraftVariable;
 use superbig\vipps\gateways\Gateway;
@@ -97,6 +98,9 @@ class Vipps extends Plugin
         Event::on(Gateways::class, Gateways::EVENT_REGISTER_GATEWAY_TYPES, function(RegisterComponentTypesEvent $event) {
             $event->types[] = Gateway::class;
         });
+
+        Event::on(OrderHistories::class, OrderHistories::EVENT_ORDER_STATUS_CHANGE, [self::$plugin->getPayments(), 'onStatusChange']);
+        Event::on(OrderAdjustments::class, OrderAdjustments::EVENT_REGISTER_ORDER_ADJUSTERS, [self::$plugin->getExpress(), 'onRegisterOrderAdjusters']);
 
         Event::on(
             CraftVariable::class,

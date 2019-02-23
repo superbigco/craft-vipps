@@ -95,12 +95,12 @@ class ExpressController extends Controller
 
                     $lineItem->note = $note;
                     $order->addLineItem($lineItem);
-
-                    Craft::$app->getElements()->saveElement($order);
                 }
             }
         }
         $order->setGatewayId($gateway->id);
+        $order->shippingMethodHandle = null;
+        $order->recalculate();
 
         $originalTotalPrice       = $order->getOutstandingBalance();
         $originalTotalQty         = $order->getTotalQty();
@@ -142,6 +142,7 @@ class ExpressController extends Controller
                 return null;
             }
         }
+
         $redirect    = '';
         $transaction = null;
 
