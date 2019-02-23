@@ -145,6 +145,7 @@ class Gateway extends BaseGateway
             'authToken' => $this->getAuthToken(),
         ]);
     }
+
     public function getPaymentTypeOptions(): array
     {
         return [
