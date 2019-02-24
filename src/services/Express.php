@@ -68,12 +68,13 @@ class Express extends Component
         }
 
         $class = $config['class'] ?? null;
+        $title = $config['title'] ?? '';
 
         $url  = $this->getCheckoutUrl($purchasable, $config);
         $html = $view->renderTemplate('vipps/_components/express/button', [
             'url'         => $url,
             'class'       => $class,
-            'title'       => '',
+            'title'       => $title,
             'purchasable' => $purchasable,
         ]);
 
@@ -122,10 +123,11 @@ class Express extends Component
             'options' => $config['options'] ?? [],
         ]);
         $class = $config['class'] ?? null;
+        $title = $config['title'] ?? '';
 
         $html = $view->renderTemplate('vipps/_components/express/form-button', [
             'class'       => $class,
-            'title'       => '',
+            'title'       => $title,
             'purchasable' => $purchasable,
         ]);
 
