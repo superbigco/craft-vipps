@@ -67,7 +67,7 @@ class PaymentResponse implements RequestResponseInterface
      */
     public function isSuccessful(): bool
     {
-        return !array_key_exists('errorInfo', $this->data);
+        return !isset($this->data[0]['errorGroup']);
     }
 
     /**
@@ -124,7 +124,7 @@ class PaymentResponse implements RequestResponseInterface
      */
     public function getTransactionReference(): string
     {
-        if (empty($this->data)) {
+        if (empty($this->data['orderId'])) {
             return '';
         }
 
