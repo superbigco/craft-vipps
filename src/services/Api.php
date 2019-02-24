@@ -29,6 +29,12 @@ use craft\base\Component;
  */
 class Api extends Component
 {
+    const ENDPOINT      = 'https://api.vipps.no';
+    const TEST_ENDPOINT = 'https://apitest.vipps.no';
+
+    private $_client;
+    private $_accessToken;
+
     // Public Methods
     // =========================================================================
 
@@ -38,6 +44,9 @@ class Api extends Component
         $this->getAccessToken();
     }
 
+    /**
+     * @return array|null
+     */
     public function getAccessTokenHeader()
     {
         $token = $this->_accessToken;
@@ -56,28 +65,11 @@ class Api extends Component
     {
         $testMode = Vipps::$plugin->getSettings()->testMode;
 
-        return $testMode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';
-    }
-
-    private function getAccessToken()
-    {
-        if (!$this->_accessToken) {
-            $url                = 'accessToken/get';
-            $response           = $this->post($url, []);
-            $this->_accessToken = $response['access_token'] ?? null;
-        }
-
-        return $this->_accessToken;
+        return $testMode ? self::TEST_ENDPOINT : self::ENDPOINT;
     }
 
     // Public Methods
     // =========================================================================
-
-    const ENDPOINT      = 'https://api.vipps.no';
-    const TEST_ENDPOINT = 'https://apitest.vipps.no';
-
-    private $_client;
-    private $_accessToken;
 
     /**
      * @param string $url
@@ -90,35 +82,16 @@ class Api extends Component
         try {
             $client   = $this->getClient();
             $response = $client->get($url, [
-                'headers' => $this->getDefaultHeaders(),
+                'headers' => $this->_getDefaultHeaders(),
                 'query'   => build_query($query),
             ]);
             $body     = (string)$response->getBody();
             $json     = Json::decodeIfJson($body);
 
-            //dd($url, $query, $json);
-
-            //if (!empty($query)) {
-            // $request->getQuery()->set()
-            // }
-
-            // Cache the response
-            //craft()->fileCache->set($url, $json);
-            // Apply the limit and offset
-            //$items = array_slice($items, $offset, $limit);
-
 
             return $json;
         } catch (BadResponseException $e) {
-            $requestBody  = (string)$e->getRequest()->getBody();
-            $responseBody = (string)$e->getResponse()->getBody();
-            dd([
-                'url'      => $url,
-                'error'    => $e->getMessage(),
-                'query'    => $query,
-                'request'  => Json::decodeIfJson($requestBody),
-                'response' => Json::decodeIfJson($responseBody),
-            ]);
+            $this->_logException($e);
 
             return null;
         } catch (\Exception $e) {
@@ -142,7 +115,7 @@ class Api extends Component
         try {
             $client   = $this->getClient();
             $response = $client->post($url, [
-                'headers' => $this->getDefaultHeaders(),
+                'headers' => $this->_getDefaultHeaders(),
                 'json'    => $data,
             ]);
             $body     = (string)$response->getBody();
@@ -152,15 +125,9 @@ class Api extends Component
         } catch (BadResponseException $e) {
             $requestBody  = (string)$e->getRequest()->getBody();
             $responseBody = (string)$e->getResponse()->getBody();
-            $json     = Json::decodeIfJson($responseBody);
+            $json         = Json::decodeIfJson($responseBody);
 
-            dd([
-                'url'      => $url,
-                'error'    => $e->getMessage(),
-                'headers'  => $e->getRequest()->getHeaders(),
-                'request'  => Json::decodeIfJson($requestBody),
-                'response' => Json::decodeIfJson($responseBody),
-            ]);
+            $this->_logException($e);
 
             return $json;
         } catch (\Exception $e) {
@@ -181,17 +148,53 @@ class Api extends Component
         if (!$this->_client) {
             $this->_client = new Client([
                 'base_uri' => $this->getApiUrl(),
-                'headers'  => $this->getDefaultHeaders(),
+                'headers'  => $this->_getDefaultHeaders(),
             ]);
         }
 
         return $this->_client;
     }
 
-    // Protected Methods
+    // Private Methods
     // =========================================================================
 
-    private function getDefaultHeaders(): array
+
+    private function getAccessToken()
+    {
+        if (!$this->_accessToken) {
+            $url                = 'accessToken/get';
+            $response           = $this->post($url, []);
+            $this->_accessToken = $response['access_token'] ?? null;
+        }
+
+        return $this->_accessToken;
+    }
+
+    private function _logException(BadResponseException $e)
+    {
+        $requestBody  = (string)$e->getRequest()->getBody();
+        $url          = $e->getRequest()->getUri();
+        $method       = $e->getRequest()->getMethod();
+        $responseBody = (string)$e->getResponse()->getBody();
+        $json         = Json::decodeIfJson($responseBody);
+
+        $error = Craft::t(
+            'vipps',
+            "API call failed for {method} {url}: {message} @ {file}:{line}. \n{stacktrace}",
+            [
+                'url'        => $url,
+                'method'     => $method,
+                'message'    => $e->getMessage(),
+                'file'       => $e->getFile(),
+                'line'       => $e->getLine(),
+                'stacktrace' => $e->getTraceAsString(),
+                'response'   => print_r($json, true),
+            ]
+        );
+        Craft::warning($error, 'vipps');
+    }
+
+    private function _getDefaultHeaders(): array
     {
         $date     = gmdate('c');
         $ip       = $_SERVER['SERVER_ADDR'];
@@ -215,19 +218,4 @@ class Api extends Component
 
         return $headers;
     }
-}
-
-class VippsAPIException extends Exception
-{
-    public $responsecode = null;
-}
-
-// This is for 502 bad gateway, timeouts and other errors we can expect to recover from
-class TemporaryVippsAPIException extends VippsAPIException
-{
-}
-
-// This is for non-temporary problems with the keys and so forth
-class VippsAPIConfigurationException extends VippsAPIException
-{
 }

@@ -307,8 +307,8 @@ class CallbackController extends Controller
         $headers = Craft::$app->getRequest()->getHeaders();
 
         $path = Craft::$app->getPath()->getStoragePath() . '/vipps.txt';
-        @file_put_contents($path, print_r($payload, true), FILE_APPEND);
-        @file_put_contents($path, print_r($headers, true), FILE_APPEND);
+        //@file_put_contents($path, print_r($payload, true), FILE_APPEND);
+        //@file_put_contents($path, print_r($headers, true), FILE_APPEND);
         //@file_put_contents($path, (string)Craft::$app->getRequest()->getRawBody(), FILE_APPEND);
 
         if (!$payload) {
