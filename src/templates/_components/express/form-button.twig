@@ -14,7 +14,9 @@
         $form.innerHTML = `
             <form name="{{ expressButtonId ~ 'Form' }}" method="post" action="{{ siteUrl('vipps/express/checkout') }}">
                 {{ csrfInput() }}
+                {% if purchasable %}
                 <input type="hidden" name="purchasables[][id]" value="{{ purchasable.id }}">
+                {% endif %}
             </form>
         `;
 
