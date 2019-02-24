@@ -51,7 +51,7 @@ class Express extends Component
             // it will get the first shipping adjuster if none is set
             // This removes the adjustment, making sure the shipping is applied by the gateway
             foreach ($e->types as $key => $adjuster) {
-                if ($adjuster instanceof Shipping) {
+                if ($adjuster === Shipping::class || $adjuster instanceof Shipping) {
                     unset($e->types[ $key ]);
                 }
             }
