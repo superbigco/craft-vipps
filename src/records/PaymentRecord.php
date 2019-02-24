@@ -30,6 +30,6 @@ class PaymentRecord extends ActiveRecord
      */
     public static function tableName()
     {
-        return '{{%vipps_payment}}';
+        return '{{%vipps_payments}}';
     }
 }

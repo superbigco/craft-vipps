@@ -32,18 +32,6 @@ class Express extends Component
     // Public Methods
     // =========================================================================
 
-    public function initiatePayment($purchasables)
-    {
-        $settings            = Vipps::$plugin->getSettings();
-        $cart                = Plugin::getInstance()->getCarts()->getCart(true);
-        $orderId             = $cart->getShortNumber() ?? $cart->id;
-        $orderTotalMinorUnit = $cart->getTotalPrice() * 100;
-        $paymentRequest      = new PaymentRequestModel([
-            'orderId' => $orderId,
-            'amount'  => $orderTotalMinorUnit,
-        ]);
-    }
-
     public function onRegisterOrderAdjusters(RegisterComponentTypesEvent $e)
     {
         if (Vipps::$plugin->getPayments()->getIsExpress()) {
@@ -58,7 +46,15 @@ class Express extends Component
         }
     }
 
-    public function getButton($purchasable = null, $config = []): string
+    /**
+     * @param null  $purchasable
+     * @param array $config
+     *
+     * @return string
+     * @throws \Twig_Error_Loader
+     * @throws \yii\base\Exception
+     */
+    public function getButton($purchasable = null, array $config = []): string
     {
         $view    = Craft::$app->getView();
         $oldMode = $view->getTemplateMode();
@@ -86,7 +82,7 @@ class Express extends Component
         return $html;
     }
 
-    public function getCheckoutUrl($purchasable = null, $config = []): string
+    public function getCheckoutUrl($purchasable = null, array $config = []): string
     {
         $data    = array_filter([
             'id'      => $purchasable->id ?? null,
@@ -105,7 +101,15 @@ class Express extends Component
         return UrlHelper::siteUrl('vipps/express/checkout', $payload);
     }
 
-    public function getFormButton($purchasable = null, $config = []): string
+    /**
+     * @param null  $purchasable
+     * @param array $config
+     *
+     * @return string
+     * @throws \Twig_Error_Loader
+     * @throws \yii\base\Exception
+     */
+    public function getFormButton($purchasable = null, array $config = []): string
     {
         $view    = Craft::$app->getView();
         $oldMode = $view->getTemplateMode();

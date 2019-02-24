@@ -34,7 +34,7 @@
     "extra": {
         "name": "Vipps",
         "handle": "vipps",
-        "hasCpSettings": true,
+        "hasCpSettings": false,
         "hasCpSection": false,
         "changelogUrl": "https://raw.githubusercontent.com/superbigco/craft-vipps/master/CHANGELOG.md",
         "class": "superbig\\vipps\\Vipps"

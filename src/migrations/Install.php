@@ -44,9 +44,9 @@ class Install extends Migration
         if ($this->createTables()) {
             $this->createIndexes();
             $this->addForeignKeys();
+
             // Refresh the db schema caches
             Craft::$app->db->schema->refresh();
-            $this->insertDefaultData();
         }
 
         return true;
@@ -80,12 +80,12 @@ class Install extends Migration
                 PaymentRecord::tableName(),
                 [
                     'id'                   => $this->primaryKey(),
-                    'dateCreated'          => $this->dateTime()->notNull(),
-                    'dateUpdated'          => $this->dateTime()->notNull(),
-                    'uid'                  => $this->uid(),
                     'orderId'              => $this->integer()->notNull(),
                     'transactionReference' => $this->string(255)->notNull()->defaultValue(''),
                     'shortId'              => $this->string(255)->notNull()->defaultValue(''),
+                    'dateCreated'          => $this->dateTime()->notNull(),
+                    'dateUpdated'          => $this->dateTime()->notNull(),
+                    'uid'                  => $this->uid(),
                 ]
             );
         }
@@ -143,13 +143,6 @@ class Install extends Migration
             'CASCADE',
             'CASCADE'
         );
-    }
-
-    /**
-     * @return void
-     */
-    protected function insertDefaultData()
-    {
     }
 
     /**

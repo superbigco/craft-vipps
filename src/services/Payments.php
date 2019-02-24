@@ -262,10 +262,10 @@ class Payments extends Component
 
     public function getTransactionText(Order $order): string
     {
-        $settings = Vipps::$plugin->getSettings();
+        $text = $this->getGateway()->transactionText;
 
-        return Craft::$app->getView()->renderObjectTemplate($settings->transactionText, $order, [
-            'lineItems' => $this->getLineItemsAsText($order),
+        return Craft::$app->getView()->renderObjectTemplate($text, $order, [
+            'lineItemsText' => $this->getLineItemsAsText($order),
         ]);
     }
 

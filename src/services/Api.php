@@ -63,7 +63,7 @@ class Api extends Component
 
     public function getApiUrl(): string
     {
-        $testMode = Vipps::$plugin->getSettings()->testMode;
+        $testMode = Vipps::$plugin->getPayments()->getGateway()->testMode;
 
         return $testMode ? self::TEST_ENDPOINT : self::ENDPOINT;
     }
@@ -172,7 +172,6 @@ class Api extends Component
 
     private function _logException(BadResponseException $e)
     {
-        $requestBody  = (string)$e->getRequest()->getBody();
         $url          = $e->getRequest()->getUri();
         $method       = $e->getRequest()->getMethod();
         $responseBody = (string)$e->getResponse()->getBody();
@@ -198,7 +197,7 @@ class Api extends Component
     {
         $date     = gmdate('c');
         $ip       = $_SERVER['SERVER_ADDR'];
-        $settings = Vipps::$plugin->getSettings();
+        $settings = Vipps::$plugin->getPayments()->getGateway();
         $headers  = [
             'content-type'              => 'application/json',
             'X-Request-Id'              => $requestId = 1,
@@ -212,8 +211,6 @@ class Api extends Component
 
         if ($tokenHeader = $this->getAccessTokenHeader()) {
             $headers = array_merge($headers, $tokenHeader);
-            //unset($headers['client_id']);
-            //unset($headers['client_secret']);
         }
 
         return $headers;

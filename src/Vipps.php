@@ -22,7 +22,6 @@ use superbig\vipps\services\Payments as PaymentsService;
 use superbig\vipps\services\Express as ExpressService;
 use superbig\vipps\services\Api as ApiService;
 use superbig\vipps\models\Settings;
-use superbig\vipps\utilities\VippsUtility as VippsUtilityUtility;
 
 use Craft;
 use craft\base\Plugin;
@@ -210,20 +209,5 @@ class Vipps extends Plugin
 
     protected function installCpEventListeners()
     {
-        Event::on(
-            Utilities::class,
-            Utilities::EVENT_REGISTER_UTILITY_TYPES,
-            function(RegisterComponentTypesEvent $event) {
-                $event->types[] = VippsUtilityUtility::class;
-            }
-        );
-
-        Event::on(
-            UrlManager::class,
-            UrlManager::EVENT_REGISTER_CP_URL_RULES,
-            function(RegisterUrlRulesEvent $event) {
-                $event->rules['cpActionTrigger1'] = 'vipps/default/do-something';
-            }
-        );
     }
 }
