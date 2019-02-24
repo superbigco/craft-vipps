@@ -41,7 +41,7 @@ class Api extends Component
     public function init()
     {
         // Set initial token
-        $this->getAccessToken();
+        $this->_getAccessToken();
     }
 
     /**
@@ -159,7 +159,7 @@ class Api extends Component
     // =========================================================================
 
 
-    private function getAccessToken()
+    private function _getAccessToken()
     {
         if (!$this->_accessToken) {
             $url                = 'accessToken/get';
