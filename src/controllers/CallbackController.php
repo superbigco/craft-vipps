@@ -121,6 +121,7 @@ class CallbackController extends Controller
             $order->setShippingAddress($address);
             $order->shippingMethodHandle = $shippingDetails['shippingMethodId'];
 
+            $order->recalculate();
             Craft::$app->getElements()->saveElement($order, false);
         }
 
@@ -132,7 +133,7 @@ class CallbackController extends Controller
         // 2) The result of the gateway request was successful but also got a redirect response. We now need to redirect if $redirect is not null.
         $success = $response->isSuccessful() || $response->isProcessing();
 
-        if ($success && $transaction->status === TransactionRecord::STATUS_SUCCESS) {
+        if ($success) {
             $transaction->order->updateOrderPaidInformation();
         }
 
