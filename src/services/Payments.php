@@ -221,35 +221,33 @@ class Payments extends Component
     public function onStatusChange(OrderStatusEvent $e)
     {
         try {
+            $order   = $e->order;
             $gateway = $this->getGateway();
+            $enabled = $gateway && $gateway->captureOnStatusChange && $this->isVippsGateway($order);
 
-            if ($gateway && $gateway->captureOnStatusChange) {
-                $order = $e->order;
+            if ($enabled && $gateway->captureStatusUid === $e->orderHistory->getNewStatus()->uid) {
+                $transaction = $this->getSuccessfulTransactionForOrder($order);
 
-                if ($gateway->captureStatusUid === $e->orderHistory->getNewStatus()->uid) {
-                    $transaction = $this->getSuccessfulTransactionForOrder($order);
+                if ($transaction->canCapture()) {
+                    // capture transaction and display result
+                    $child = Plugin::getInstance()->getPayments()->captureTransaction($transaction);
 
-                    if ($transaction->canCapture()) {
-                        // capture transaction and display result
-                        $child = Plugin::getInstance()->getPayments()->captureTransaction($transaction);
+                    $message = $child->message ? ' (' . $child->message . ')' : '';
 
-                        $message = $child->message ? ' (' . $child->message . ')' : '';
-
-                        if ($child->status === TransactionRecord::STATUS_SUCCESS) {
-                            $child->order->updateOrderPaidInformation();
-                            Craft::$app->getSession()->setNotice(Craft::t('commerce', 'Transaction captured successfully: {message}', [
-                                'message' => $message,
-                            ]));
-                        }
-                        else {
-                            Craft::$app->getSession()->setError(Craft::t('commerce', 'Couldn’t capture transaction: {message}', [
-                                'message' => $message,
-                            ]));
-                        }
+                    if ($child->status === TransactionRecord::STATUS_SUCCESS) {
+                        $child->order->updateOrderPaidInformation();
+                        Craft::$app->getSession()->setNotice(Craft::t('commerce', 'Transaction captured successfully: {message}', [
+                            'message' => $message,
+                        ]));
                     }
                     else {
-                        Craft::$app->getSession()->setError(Craft::t('commerce', 'Couldn’t capture transaction.', ['id' => $transaction->id]));
+                        Craft::$app->getSession()->setError(Craft::t('commerce', 'Couldn’t capture transaction: {message}', [
+                            'message' => $message,
+                        ]));
                     }
+                }
+                else {
+                    Craft::$app->getSession()->setError(Craft::t('commerce', 'Couldn’t capture transaction.', ['id' => $transaction->id]));
                 }
             }
         } catch (\Exception $e) {
@@ -335,5 +333,17 @@ class Payments extends Component
         $this->_express = $value;
 
         return $this;
+    }
+
+    public function getOrderDetails(Order $order)
+    {
+
+    }
+
+    public function isVippsGateway(Order $order): bool
+    {
+        $orderGateway = $order->getGateway();
+
+        return $orderGateway !== null && $orderGateway instanceof Gateway;
     }
 }
