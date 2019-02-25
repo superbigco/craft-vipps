@@ -122,6 +122,22 @@ See the [Commerce docs on Add to Cart](https://docs.craftcms.com/commerce/v2/add
 
 See [Brand Guidelines](https://paper.dropbox.com/doc/Vipps-Payment-guidelines--AYLr~Jd2mNsXGXJV1IGf7FBLAg-tBvSIbJpzDrqBziYeQMCH) for more advice on how to use the payment buttons.
 
+## Get Support
+
+### Discord
+
+Get in touch via the [Craft Discord](https://craftcms.com/discord), in the `#craft3-help` channel. Mention one of our team members on the following handles:
+
+- `@fred`
+
+### Twitter
+
+Get our attention on Twitter by using the `#craftcms` hashtag and mentioning [@sjelfull](https://twitter.com/sjelfull)
+
+### Email
+
+If you have any feedback, comments, questions or suggestion: email us at `contact at superbig.co`.
+
 ## Vipps Roadmap
 
 Some things to do, and ideas for potential features:
