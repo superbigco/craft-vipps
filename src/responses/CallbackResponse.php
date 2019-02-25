@@ -172,6 +172,32 @@ class CallbackResponse implements RequestResponseInterface
     }
 
     /**
+     * Returns the users email (only in Express callback)
+     *
+     * @return string
+     */
+    public function getEmail(): string
+    {
+        return $this->data['userDetails']['email'] ?? null;
+    }
+
+    /**
+     * Returns paid amount for this transaction
+     *
+     * @return int
+     */
+    public function getAmount($convert = true): int
+    {
+        $amount = $this->data['transactionInfo']['amount'] ?? 0;
+
+        if ($convert) {
+            return $amount / 100;
+        }
+
+        return $amount;
+    }
+
+    /**
      * Perform the redirect.
      *
      * @return mixed

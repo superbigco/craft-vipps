@@ -121,11 +121,22 @@ class CallbackController extends Controller
             $order->setShippingAddress($address);
             $order->shippingMethodHandle = $shippingDetails['shippingMethodId'];
 
+            if (!$order->getCustomer()->getUser() && empty($order->getEmail())) {
+                $order->setEmail($response->getEmail());
+            }
+
             $order->recalculate();
             Craft::$app->getElements()->saveElement($order, false);
         }
 
         $childTransaction = Plugin::getInstance()->getTransactions()->createTransaction(null, $transaction);
+
+        if ($response->isExpress()) {
+            // Make sure the amount is correct since it can change on the Vipps side
+            // when customer selects shipping method
+            $childTransaction->amount = $response->getAmount();
+        }
+
         $this->_updateTransaction($childTransaction, $response);
 
         // Success can mean 2 things in this context.
