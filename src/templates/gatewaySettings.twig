@@ -67,7 +67,7 @@
 
 {{ textField({
     label: "Fallback URL"|t("vipps"),
-    instructions: "The user will be redirected here when finishing the payment."|t("vipps"),
+    instructions: "The user will be redirected here when finishing or cancelling the payment."|t("vipps"),
     id: 'fallbackUrl',
     name: 'fallbackUrl',
     class: 'ltr',
@@ -122,6 +122,7 @@
     errors: gateway.getErrors('captureStatusUid')
 }) }}
 
+{#
 {{ lightswitchField({
     label: "Create user on express checkout"|t('vipps'),
     instructions: "This will create a user when someone performs a Express Checkout and they don't already have a user matching their email",
@@ -129,6 +130,7 @@
     on: gateway.createUserOnExpressCheckout,
     errors: gateway.getErrors('createUserOnExpressCheckout'),
 }) }}
+#}
 
 
 {{ lightswitchField({
