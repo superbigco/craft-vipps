@@ -96,6 +96,14 @@
 }) }}
 
 {{ lightswitchField({
+    label: "Use billing phone number as Vipps phone number"|t('vipps'),
+    description: "This will set the Vipps phone number to be the same as the billing address phone number, if any."|t('vipps'),
+    name: 'useBillingPhoneAsVippsPhoneNumber',
+    on: gateway.useBillingPhoneAsVippsPhoneNumber,
+    errors: gateway.getErrors('useBillingPhoneAsVippsPhoneNumber'),
+}) }}
+
+{{ lightswitchField({
     label: "Capture on status change"|t('vipps'),
     description: "This will enable the gateway to automatically capture on a status change - say when you change from _New_ to _Shipped_"|t('vipps'),
     name: 'captureOnStatusChange',

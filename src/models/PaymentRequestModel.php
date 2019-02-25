@@ -80,12 +80,10 @@ class PaymentRequestModel extends Model
         $billingAddress      = $this->order->getBillingAddress();
         $phoneNumber         = !empty($billingAddress->phone) ? $billingAddress->phone : '48059154';
         $gateway             = Vipps::$plugin->payments->getGateway();
+        $billingAddress      = $this->order->getBillingAddress();
 
-        return [
-            'customerInfo' =>
-                [
-                    'mobileNumber' => 48059154,
-                ],
+
+        $payload = [
             'merchantInfo' =>
                 [
                     'authToken'             => $gateway->getAuthToken(),
@@ -105,6 +103,14 @@ class PaymentRequestModel extends Model
                     'transactionText' => $this->getTransactionText(),
                 ],
         ];
+
+        if ($gateway->useBillingPhoneAsVippsPhoneNumber && !empty($billingAddress->phone)) {
+            $payload['customerInfo'] = [
+                'mobileNumber' => $billingAddress->phone,
+            ];
+        }
+
+        return $payload;
     }
 
     public function getTransactionText(): string

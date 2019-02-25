@@ -53,6 +53,7 @@ return [
         'subscriptionKeyAccessToken' => '',
         'subscriptionKeyEcommerce'   => '',
         'merchantSerialNumber'       => '',
+        'useBillingPhoneAsVippsPhoneNumber' => true,
         
         // You have access to any properties on the order +
         // a property called lineItemsText that will list the 
