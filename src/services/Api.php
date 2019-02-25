@@ -91,14 +91,13 @@ class Api extends Component
 
             return $json;
         } catch (BadResponseException $e) {
+            $responseBody = (string)$e->getResponse()->getBody();
+            $json         = Json::decodeIfJson($responseBody);
             $this->_logException($e);
 
-            return null;
+            return $json;
         } catch (\Exception $e) {
-            dd([
-                'url'   => $url,
-                'error' => $e->getMessage(),
-            ]);
+            $this->_logException($e);
 
             return null;
         }
@@ -123,7 +122,6 @@ class Api extends Component
 
             return $json;
         } catch (BadResponseException $e) {
-            $requestBody  = (string)$e->getRequest()->getBody();
             $responseBody = (string)$e->getResponse()->getBody();
             $json         = Json::decodeIfJson($responseBody);
 
@@ -131,10 +129,7 @@ class Api extends Component
 
             return $json;
         } catch (\Exception $e) {
-            dd([
-                'url'   => $url,
-                'error' => $e->getMessage(),
-            ]);
+            $this->_logException($e);
 
             return null;
         }
@@ -170,26 +165,42 @@ class Api extends Component
         return $this->_accessToken;
     }
 
-    private function _logException(BadResponseException $e)
+    private function _logException(\Exception $e)
     {
-        $url          = $e->getRequest()->getUri();
-        $method       = $e->getRequest()->getMethod();
-        $responseBody = (string)$e->getResponse()->getBody();
-        $json         = Json::decodeIfJson($responseBody);
+        if ($e instanceof BadResponseException) {
+            $url          = $e->getRequest()->getUri();
+            $method       = $e->getRequest()->getMethod();
+            $responseBody = (string)$e->getResponse()->getBody();
+            $json         = Json::decodeIfJson($responseBody);
 
-        $error = Craft::t(
-            'vipps',
-            "API call failed for {method} {url}: {message} @ {file}:{line}. \n{stacktrace}",
-            [
-                'url'        => $url,
-                'method'     => $method,
-                'message'    => $e->getMessage(),
-                'file'       => $e->getFile(),
-                'line'       => $e->getLine(),
-                'stacktrace' => $e->getTraceAsString(),
-                'response'   => print_r($json, true),
-            ]
-        );
+            $error = Craft::t(
+                'vipps',
+                "API call failed for {method} {url}: {message} @ {file}:{line}. \n{stacktrace}",
+                [
+                    'url'        => $url,
+                    'method'     => $method,
+                    'message'    => $e->getMessage(),
+                    'file'       => $e->getFile(),
+                    'line'       => $e->getLine(),
+                    'stacktrace' => $e->getTraceAsString(),
+                    'response'   => print_r($json, true),
+                ]
+            );
+        }
+        else {
+            $error = Craft::t(
+                'vipps',
+                "API call failed: {message} @ {file}:{line}. \n{stacktrace}",
+                [
+                    'message'    => $e->getMessage(),
+                    'file'       => $e->getFile(),
+                    'line'       => $e->getLine(),
+                    'stacktrace' => $e->getTraceAsString(),
+                ]
+            );
+        }
+
+
         Craft::warning($error, 'vipps');
     }
 
