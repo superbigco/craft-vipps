@@ -26,7 +26,18 @@ To install the plugin, follow these instructions.
 
 ## Vipps Overview
 
--Insert text here-
+This plugin providers your Craft Commerce shop with two payment alternatives:
+
+- A normal gateway for Craft Commerce, where a customer can select Vipps when checkout out
+- Express Checkout - where a user taps the familiar, orange Vipps Checkout button and jumps right to the Vipps app to pay.
+
+### What is Vipps?
+
+Vipps is a mobile app that makes it easy to transfer money to others, pay in stores, online stores and bills.
+
+Vipps has 2.9 million users in Norway and is used by tens of thousands daily to shop online.
+
+
 
 ## Configuring Vipps
 
