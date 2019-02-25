@@ -8,7 +8,7 @@ _NOTE: This plugin is in beta and should be tested properly before being put in 
 
 ## Requirements
 
-This plugin requires Craft CMS 3.0.0-beta.23 or later.
+This plugin requires Craft CMS 3.1.0 and Craft Commerce 2.0 or later.
 
 ## Installation
 
@@ -36,7 +36,6 @@ This plugin providers your Craft Commerce shop with two payment alternatives:
 Vipps is a mobile app that makes it easy to transfer money to others, pay in stores, online stores and bills.
 
 Vipps has 2.9 million users in Norway and is used by tens of thousands daily to shop online.
-
 
 
 ## Configuring Vipps
