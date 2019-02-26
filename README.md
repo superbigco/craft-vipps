@@ -80,20 +80,20 @@ This is an overview that shows you where to get the different config values thro
 | Config value | Description | Where to get it | Example value |
 | :--- | :--- | :--- | ---: |
 | **testMode** | Enable test mode |  | `true/false` |
-| **clientId** | Client ID |  | String |
-| **clientSecret** | Client Secret |  | String |
-| **subscriptionKeyAccessToken** | Subscription Key for fetching a new access token |  | String |
-| **subscriptionKeyEcommerce** | Subscription Key for calls to the Vipps API |  | String |
-| **merchantSerialNumber** | Merchant Serial Number |  | String |
+| **clientId** | Client ID | Applications -> View Secrets -> Client Id | String |
+| **clientSecret** | Client Secret | Applications -> View Secrets -> Client Secret | String |
+| **subscriptionKeyAccessToken** | Subscription Key for fetching a new access token | Products -> (Click either) -> DEFAULT_ACCESSTOKEN -> Primary key | String |
+| **subscriptionKeyEcommerce** | Subscription Key for calls to the Vipps API | Products -> (Click either) -> ECOMMERCE-..... -> Primary key | String |
+| **merchantSerialNumber** | Merchant Serial Number | Applications -> Saleunit Serial Number | String |
 | **transactionText** | This text will show up in the Vipps app when a customer is paying |  | String |
-| **expressCheckout** | Enable Express Checkout | `true/false` |  
-| **addItemToCartIfAlreadyExists** | On Express Checkout, this will decide if a item should be added to the existing cart instead of replaced | `true/false` |
-| **newCartOnExpressCheckout** | Creates a new cart on Express Checkout | `true/false` | 
+| **expressCheckout** | Enable Express Checkout | | `true/false` |  
+| **addItemToCartIfAlreadyExists** | On Express Checkout, this will decide if a item should be added to the existing cart instead of replaced | | `true/false` |
+| **newCartOnExpressCheckout** | Creates a new cart on Express Checkout | | `true/false` | 
 | **fallbackUrl** | Vipps will redirect to this URL when a payment is completed or cancelled. |  | String |
 | **authToken** | Read-only - Token used to verify callbacks from Vipps |  | String |
-| **captureOnStatusChange** | Enable automatic capture when switching order to new Order Status | `true/false` | 
+| **captureOnStatusChange** | Enable automatic capture when switching order to new Order Status | | `true/false` | 
 | **captureStatusUid** | The uid of the Order Status to capture automatically |  | String |
-| **useBillingPhoneAsVippsPhoneNumber** | Pull the Vipps phone number automatically from billing address, if set and not empty | `true/false` | 
+| **useBillingPhoneAsVippsPhoneNumber** | Pull the Vipps phone number automatically from billing address, if set and not empty | | `true/false` | 
 
 ## Using Vipps
 
