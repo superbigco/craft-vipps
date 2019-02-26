@@ -84,6 +84,9 @@ class PaymentRequestModel extends Model
 
 
         $payload = [
+            'customerInfo' => [
+                'mobileNumber' => '',
+            ],
             'merchantInfo' =>
                 [
                     'authToken'             => $gateway->getAuthToken(),

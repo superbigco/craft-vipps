@@ -158,7 +158,11 @@ class PaymentResponse implements RequestResponseInterface
      */
     public function getMessage(): string
     {
-        return 'Message';
+        if (isset($this->data[0]['errorMessage'])) {
+            return $this->data[0]['errorMessage'];
+        }
+
+        return '';
     }
 
     /**
