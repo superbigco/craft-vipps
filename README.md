@@ -53,6 +53,8 @@ return [
         'subscriptionKeyEcommerce'   => '',
         'merchantSerialNumber'       => '',
         'useBillingPhoneAsVippsPhoneNumber' => true,
+        'captureOnStatusChange'             => true,
+        'captureStatusUid'                  => '',
         
         // You have access to any properties on the order +
         // a property called lineItemsText that will list the 
