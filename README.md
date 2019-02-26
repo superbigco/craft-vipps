@@ -35,7 +35,7 @@ This plugin providers your Craft Commerce shop with two payment alternatives:
 
 Vipps is a mobile app that makes it easy to transfer money to others, pay in stores, online stores and bills.
 
-Vipps has 2.9 million users in Norway and is used by tens of thousands daily to shop online.
+Vipps has 2.9 million users in Norway and is used daily by tens of thousands to shop online.
 
 
 ## Configuring Vipps
@@ -72,6 +72,28 @@ return [
 Note that the `gatewayHandle` here has to match your gateway's handle in the Commerce Gateway settings.
 
 See [Commerce docs](https://docs.craftcms.com/commerce/v2/gateway-config.html) for more information on how to configure gateways with a config file.
+
+### Overview of config settings
+
+This is an overview that shows you where to get the different config values through the Vipps Developer Portal.
+
+| Config value | Description | Where to get it | Example value |
+| :--- | :--- | :--- | ---: |
+| **testMode** | Enable test mode |  | `true/false` |
+| **clientId** | Client ID |  | String |
+| **clientSecret** | Client Secret |  | String |
+| **subscriptionKeyAccessToken** | Subscription Key for fetching a new access token |  | String |
+| **subscriptionKeyEcommerce** | Subscription Key for calls to the Vipps API |  | String |
+| **merchantSerialNumber** | Merchant Serial Number |  | String |
+| **transactionText** | This text will show up in the Vipps app when a customer is paying |  | String |
+| **expressCheckout** | Enable Express Checkout | `true/false` |  
+| **addItemToCartIfAlreadyExists** | On Express Checkout, this will decide if a item should be added to the existing cart instead of replaced | `true/false` |
+| **newCartOnExpressCheckout** | Creates a new cart on Express Checkout | `true/false` | 
+| **fallbackUrl** | Vipps will redirect to this URL when a payment is completed or cancelled. |  | String |
+| **authToken** | Read-only - Token used to verify callbacks from Vipps |  | String |
+| **captureOnStatusChange** | Enable automatic capture when switching order to new Order Status | `true/false` | 
+| **captureStatusUid** | The uid of the Order Status to capture automatically |  | String |
+| **useBillingPhoneAsVippsPhoneNumber** | Pull the Vipps phone number automatically from billing address, if set and not empty | `true/false` | 
 
 ## Using Vipps
 
@@ -145,5 +167,6 @@ Some things to do, and ideas for potential features:
 - [ ] Handle signup after payment 
 - [ ] Support for user signups via Vipps
 - [ ] Support for subscriptions (once Vipps makes it available)
+- [ ] Better handling of addresses and existing customers
 
 Brought to you by [Superbig](https://superbig.co)
