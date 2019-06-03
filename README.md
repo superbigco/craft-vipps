@@ -152,6 +152,7 @@ See [Brand Guidelines](https://paper.dropbox.com/doc/Vipps-Payment-guidelines--A
 
 Get in touch via the [Craft Discord](https://craftcms.com/discord), in the `#craft3-help` channel. Mention one of our team members on the following handles:
 
+- `@superbig`
 - `@fred`
 
 ### Twitter
