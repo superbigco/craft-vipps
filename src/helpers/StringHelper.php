@@ -53,7 +53,7 @@ class StringHelper extends \craft\helpers\StringHelper
             random_int(0, 0x3fff) | 0x8000,
 
             // 48 bits for "node"
-            random_int(0, 0xffff), random_int(0, 0xffff), random_int(0, 0xffff)
+            random_int(0, 0xffff)
         );
     }
 }
