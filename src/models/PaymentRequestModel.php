@@ -50,11 +50,9 @@ class PaymentRequestModel extends Model
     public  $orderId;
     public  $order;
     public  $transaction;
-    private $_lineItems;
-    private $_transactionText;
     private $transactionShortId;
+    private $_transactionText;
     private $_url;
-    private $_gateway;
 
     // Public Methods
     // =========================================================================
