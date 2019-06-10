@@ -36,6 +36,8 @@ class PaymentResponse implements RequestResponseInterface
      */
     private $_processing = false;
 
+    private $_error;
+
     /**
      * Response constructor.
      *
@@ -44,6 +46,10 @@ class PaymentResponse implements RequestResponseInterface
     public function __construct($data)
     {
         $this->data = $data;
+
+        if (isset($this->data[0]['errorMessage'])) {
+            $this->_error = $this->data[0]['errorMessage'];
+        }
     }
 
     // Public Properties
@@ -67,7 +73,11 @@ class PaymentResponse implements RequestResponseInterface
      */
     public function isSuccessful(): bool
     {
-        return !isset($this->data[0]['errorGroup']);
+        if ($this->isRedirect() && $this->_error) {
+            return false;
+        }
+
+        return !$this->_error;
     }
 
     /**
@@ -158,8 +168,8 @@ class PaymentResponse implements RequestResponseInterface
      */
     public function getMessage(): string
     {
-        if (isset($this->data[0]['errorMessage'])) {
-            return $this->data[0]['errorMessage'];
+        if ($this->_error) {
+            return $this->_error;
         }
 
         return '';
