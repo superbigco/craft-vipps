@@ -73,7 +73,7 @@ class PaymentResponse implements RequestResponseInterface
      */
     public function isSuccessful(): bool
     {
-        if ($this->isRedirect() && $this->_error) {
+        if ($this->isRedirect()) {
             return false;
         }
 
