@@ -42,7 +42,7 @@ class VippsVariable
      */
     public function getExpressButton($purchasable = null, array $config = []): \Twig_Markup
     {
-        $html = Vipps::$plugin->express->getButton($purchasable, $config = []);
+        $html = Vipps::$plugin->express->getButton($purchasable, $config);
 
         return Template::raw($html);
     }

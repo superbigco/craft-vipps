@@ -1,2 +1,3 @@
 {% set iconUrl = view.getAssetManager().getPublishedUrl('@superbig/vipps/assetbundles/vippsexpress/dist', true) ~ '/img/hurtigkasse.svg' %}
-<a href="{{ url }}" class='button vipps-express-checkout' title="{{ title }}"><img alt="{{ title }}" border=0 src="{{ iconUrl }}"></a>
+{% set class = ('button vipps-express-checkout ' ~ class)|trim %}
+<a href="{{ url }}" class='{{ class }}' title="{{ title }}"><img alt="{{ title }}" border=0 src="{{ iconUrl }}"></a>
