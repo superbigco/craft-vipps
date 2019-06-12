@@ -134,7 +134,8 @@ class CallbackController extends Controller
         if ($response->isExpress()) {
             // Make sure the amount is correct since it can change on the Vipps side
             // when customer selects shipping method
-            $childTransaction->amount = $response->getAmount();
+            $childTransaction->amount        = $response->getAmount();
+            $childTransaction->paymentAmount = $response->getAmount();
         }
 
         $this->_updateTransaction($childTransaction, $response);

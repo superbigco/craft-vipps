@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ## Unreleased
 ### Fixed
 - Fixed class param for express checkout links 
+- Fixed payment amount for successful express transactions 
 
 ## 1.0.2 - 2019-06-10
 ### Fixed
