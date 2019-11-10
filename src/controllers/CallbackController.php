@@ -110,8 +110,8 @@ class CallbackController extends Controller
             $shippingDetails = $payload['shippingDetails'];
             $addressPayload  = $shippingDetails['address'];
             $address         = new Address([
-                'address1'  => $addressPayload['addressLine1'],
-                'address2'  => $addressPayload['addressLine2'],
+                'address1'  => $addressPayload['addressLine1'] ?? null,
+                'address2'  => $addressPayload['addressLine2'] ?? null,
                 'city'      => $addressPayload['city'],
                 'zipCode'   => $addressPayload['zipCode'],
                 'countryId' => $country->id,
@@ -236,8 +236,8 @@ class CallbackController extends Controller
         // $iso           = $payload['country'];
         $country = Plugin::getInstance()->getCountries()->getCountryByIso('NO');
         $address = new Address([
-            'address1'  => $payload['addressLine1'],
-            'address2'  => $payload['addressLine2'],
+            'address1'  => $payload['addressLine1'] ?? null,
+            'address2'  => $payload['addressLine2'] ?? null,
             'city'      => $payload['city'],
             'zipCode'   => $payload['postCode'],
             'countryId' => $country->id,
