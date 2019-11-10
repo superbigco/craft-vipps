@@ -93,7 +93,7 @@ class PaymentRequestModel extends Model
                     'consentRemovalPrefix'  => $callbackPrefix,
                     'fallBack'              => $fallbackUrl,
                     'isApp'                 => false,
-                    'merchantSerialNumber'  => $settings->merchantSerialNumber,
+                    'merchantSerialNumber'  => Craft::parseEnv($settings->merchantSerialNumber),
                     'paymentType'           => $this->getType(),
                 ],
             'transaction'  =>

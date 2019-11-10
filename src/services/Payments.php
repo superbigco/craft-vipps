@@ -153,7 +153,7 @@ class Payments extends Component
         $amount   = 0;
         $response = Vipps::$plugin->api->post("/ecomm/v2/payments/{$parentTransaction->reference}/capture", [
             'merchantInfo' => [
-                'merchantSerialNumber' => $gateway->merchantSerialNumber,
+                'merchantSerialNumber' => Craft::parseEnv($gateway->merchantSerialNumber),
             ],
             'transaction'  => [
                 'amount'          => $amount,
@@ -182,7 +182,7 @@ class Payments extends Component
         //dd($parentTransaction->reference, $amount, $transactionText);
         $response = Vipps::$plugin->api->post("/ecomm/v2/payments/{$parentTransaction->reference}/refund", [
             'merchantInfo' => [
-                'merchantSerialNumber' => $gateway->merchantSerialNumber,
+                'merchantSerialNumber' => Craft::parseEnv($gateway->merchantSerialNumber),
             ],
             'transaction'  => [
                 'amount'          => $amount,
@@ -262,7 +262,7 @@ class Payments extends Component
 
     public function getTransactionText(Order $order): string
     {
-        $text = $this->getGateway()->transactionText;
+        $text = Craft::parseEnv($this->getGateway()->transactionText);
 
         return Craft::$app->getView()->renderObjectTemplate($text, $order, [
             'lineItemsText' => $this->getLineItemsAsText($order),
@@ -287,7 +287,8 @@ class Payments extends Component
     public function getFallbackUrl(Order $order): string
     {
         $gateway    = $this->getGateway();
-        $parsedUrl  = Craft::$app->getView()->renderObjectTemplate($gateway->fallbackUrl, $order);
+        $url        = Craft::parseEnv($gateway->fallbackUrl);
+        $parsedUrl  = Craft::$app->getView()->renderObjectTemplate($url, $order);
         $defaultUrl = UrlHelper::siteUrl('/');
 
         return !empty($parsedUrl) ? $parsedUrl : $defaultUrl;

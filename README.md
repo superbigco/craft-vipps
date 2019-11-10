@@ -50,7 +50,6 @@ return [
         'clientId'                   => '',
         'clientSecret'               => '',
         'subscriptionKeyAccessToken' => '',
-        'subscriptionKeyEcommerce'   => '',
         'merchantSerialNumber'       => '',
         'useBillingPhoneAsVippsPhoneNumber' => true,
         'captureOnStatusChange'             => true,
@@ -82,10 +81,9 @@ This is an overview that shows you where to get the different config values thro
 | Config value | Description | Where to get it | Example value |
 | :--- | :--- | :--- | ---: |
 | **testMode** | Enable test mode |  | `true/false` |
-| **clientId** | Client ID | Applications -> View Secrets -> Client Id | String |
-| **clientSecret** | Client Secret | Applications -> View Secrets -> Client Secret | String |
-| **subscriptionKeyAccessToken** | Subscription Key for fetching a new access token | Products -> (Click either) -> DEFAULT_ACCESSTOKEN -> Primary key | String |
-| **subscriptionKeyEcommerce** | Subscription Key for calls to the Vipps API | Products -> (Click either) -> ECOMMERCE-..... -> Primary key | String |
+| **clientId** | Client ID | Utvikler -> Select _Showing test keys_ -> Show keys -> Client Id | String |
+| **clientSecret** | Client Secret | Utvikler -> Select _Showing test keys_ -> Show keys -> Client Secret | String |
+| **subscriptionKeyAccessToken** | Subscription Key for authorizing Vipps API calls | Utvikler -> Select _Showing test keys_ -> Show keys -> Primary or secondary key | String |
 | **merchantSerialNumber** | Merchant Serial Number | Applications -> Saleunit Serial Number | String |
 | **transactionText** | This text will show up in the Vipps app when a customer is paying |  | String |
 | **expressCheckout** | Enable Express Checkout | | `true/false` |  

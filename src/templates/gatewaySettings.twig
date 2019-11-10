@@ -1,6 +1,6 @@
-{% from "_includes/forms" import textField, lightswitchField, selectField %}
+{% from "_includes/forms" import textField, lightswitchField, selectField, autoSuggestField %}
 
-{{ textField({
+{{ autoSuggestField({
     label: "Client Id"|t('vipps'),
     instructions: "Your Vipps Client Id."|t('vipps'),
     id: 'clientId',
@@ -8,10 +8,11 @@
     name: 'clientId',
     value: gateway.clientId,
     required: true,
-    errors: gateway.getErrors('clientId')
+    errors: gateway.getErrors('clientId'),
+    suggestEnvVars: true,
 }) }}
 
-{{ textField({
+{{ autoSuggestField({
     label: "Client Secret"|t('vipps'),
     instructions: "Your Vipps Client Secret."|t('vipps'),
     id: 'clientSecret',
@@ -19,32 +20,23 @@
     name: 'clientSecret',
     value: gateway.clientSecret,
     required: true,
-    errors: gateway.getErrors('clientSecret')
+    errors: gateway.getErrors('clientSecret'),
+    suggestEnvVars: true,
 }) }}
 
-{{ textField({
-    label: "Subscription key to get access token"|t('vipps'),
-    instructions: "Your Vipps Client Secret."|t('vipps'),
+{{ autoSuggestField({
+    label: "Subscription key"|t('vipps'),
+    instructions: "Your Vipps Subscription Key (primary or secondary)."|t('vipps'),
     id: 'subscriptionKeyAccessToken',
     class: 'ltr',
     name: 'subscriptionKeyAccessToken',
     value: gateway.subscriptionKeyAccessToken,
     required: true,
-    errors: gateway.getErrors('subscriptionKeyAccessToken')
+    errors: gateway.getErrors('subscriptionKeyAccessToken'),
+    suggestEnvVars: true,
 }) }}
 
-{{ textField({
-    label: "Subscription key to perform authorized API calls"|t('vipps'),
-    instructions: "Your Vipps Client Secret."|t('vipps'),
-    id: 'subscriptionKeyEcommerce',
-    class: 'ltr',
-    name: 'subscriptionKeyEcommerce',
-    value: gateway.subscriptionKeyEcommerce,
-    required: true,
-    errors: gateway.getErrors('subscriptionKeyEcommerce')
-}) }}
-
-{{ textField({
+{{ autoSuggestField({
     label: "Merchant Serial Number"|t('vipps'),
     instructions: "Your publishable Stripe API key."|t('vipps'),
     id: 'merchantSerialNumber',
@@ -52,27 +44,30 @@
     name: 'merchantSerialNumber',
     value: gateway.merchantSerialNumber,
     required: true,
-    errors: gateway.getErrors('merchantSerialNumber')
+    errors: gateway.getErrors('merchantSerialNumber'),
+    suggestEnvVars: true,
 }) }}
 
-{{ textField({
+{{ autoSuggestField({
     label: "Transaction text"|t("vipps"),
     instructions: "This will be listed in the Vipps app when a user authorizes a payment."|t("vipps"),
     id: 'transactionText',
     name: 'transactionText',
     class: 'ltr',
     value: gateway.transactionText,
-    errors: gateway.getErrors('transactionText')
+    errors: gateway.getErrors('transactionText'),
+    suggestEnvVars: true,
 }) }}
 
-{{ textField({
+{{ autoSuggestField({
     label: "Fallback URL"|t("vipps"),
     instructions: "The user will be redirected here when finishing or cancelling the payment."|t("vipps"),
     id: 'fallbackUrl',
     name: 'fallbackUrl',
     class: 'ltr',
     value: gateway.fallbackUrl,
-    errors: gateway.getErrors('fallbackUrl')
+    errors: gateway.getErrors('fallbackUrl'),
+    suggestEnvVars: true,
 }) }}
 
 {{ textField({

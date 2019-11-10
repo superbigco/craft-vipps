@@ -57,7 +57,7 @@ class Api extends Component
 
         return [
             'Authorization'             => 'Bearer ' . $token,
-            'ocp-apim-subscription-key' => Vipps::$plugin->getSettings()->subscriptionKeyEcommerce,
+            'ocp-apim-subscription-key' => Vipps::$plugin->getSettings()->subscriptionKeyAccessToken,
         ];
     }
 
@@ -105,7 +105,7 @@ class Api extends Component
 
     /**
      * @param string $url
-     * @param array  $query
+     * @param array  $data
      *
      * @return array|null
      */
@@ -215,9 +215,9 @@ class Api extends Component
             'X-TimeStamp'               => $date,
             'X-Source-Address'          => $ip,
             'cache-control'             => 'no-cache',
-            'ocp-apim-subscription-key' => $settings->subscriptionKeyAccessToken,
-            'client_id'                 => $settings->clientId,
-            'client_secret'             => $settings->clientSecret,
+            'ocp-apim-subscription-key' => Craft::parseEnv($settings->subscriptionKeyAccessToken),
+            'client_id'                 => Craft::parseEnv($settings->clientId),
+            'client_secret'             => Craft::parseEnv($settings->clientSecret),
         ];
 
         if ($tokenHeader = $this->getAccessTokenHeader()) {

@@ -42,6 +42,8 @@ use yii\base\Event;
  * @package   Vipps
  * @since     1.0.0
  *
+ *
+ * @method Settings getSettings()
  */
 class Vipps extends Plugin
 {
