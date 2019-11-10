@@ -146,7 +146,7 @@ class CallbackController extends Controller
         $success = $response->isSuccessful() || $response->isProcessing();
 
         if ($success) {
-            $transaction->order->updateOrderPaidInformation();
+            $transaction->getOrder()->updateOrderPaidInformation();
         }
 
         return $this->asJson([
