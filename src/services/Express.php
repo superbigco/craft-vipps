@@ -111,7 +111,9 @@ class Express extends Component
      * @param array $config
      *
      * @return string
-     * @throws \Twig_Error_Loader
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
      * @throws \yii\base\Exception
      */
     public function getFormButton($purchasable = null, array $config = []): string
@@ -122,7 +124,7 @@ class Express extends Component
 
         $data  = array_filter([
             'id'      => $purchasable->id ?? null,
-            'qty'     => $config['quantity'] ?? 1,
+            'qty'     => $config['quantity'] ?? $config['qty'] ?? 1,
             'note'    => $config['note'] ?? null,
             'options' => $config['options'] ?? [],
         ]);
@@ -133,6 +135,7 @@ class Express extends Component
             'class'       => $class,
             'title'       => $title,
             'purchasable' => $purchasable,
+            'config'      => $data,
         ]);
 
         $view->setTemplateMode($oldMode);
