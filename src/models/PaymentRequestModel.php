@@ -67,7 +67,6 @@ class PaymentRequestModel extends Model
     public function getPayload()
     {
         // Settings
-        $settings       = Vipps::$plugin->getSettings();
         $callbackPrefix = UrlHelper::siteUrl('vipps/callbacks');
         $timestamp      = (new \DateTime())->format(DateTime::ATOM);
 
@@ -79,7 +78,7 @@ class PaymentRequestModel extends Model
         $phoneNumber         = !empty($billingAddress->phone) ? $billingAddress->phone : '48059154';
         $gateway             = Vipps::$plugin->payments->getGateway();
         $billingAddress      = $this->order->getBillingAddress();
-
+        $settings            = $gateway;
 
         $payload = [
             'customerInfo' => [
@@ -93,7 +92,7 @@ class PaymentRequestModel extends Model
                     'consentRemovalPrefix'  => $callbackPrefix,
                     'fallBack'              => $fallbackUrl,
                     'isApp'                 => false,
-                    'merchantSerialNumber'  => Craft::parseEnv($settings->merchantSerialNumber),
+                    'merchantSerialNumber'  => Craft::parseEnv($gateway->merchantSerialNumber),
                     'paymentType'           => $this->getType(),
                 ],
             'transaction'  =>

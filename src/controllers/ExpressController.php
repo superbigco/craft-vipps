@@ -52,7 +52,6 @@ class ExpressController extends Controller
     public function actionCheckout()
     {
         $request       = Craft::$app->getRequest();
-        $settings      = Vipps::$plugin->getSettings();
         $commerce      = Plugin::getInstance();
         $cartService   = $commerce->getCarts();
         $order         = $cartService->getCart(true);
@@ -66,7 +65,7 @@ class ExpressController extends Controller
         $vippsPayments->setIsExpress();
 
         if ($purchasables = $request->getParam('purchasables')) {
-            if ($settings->newCartOnExpressCheckout && !empty($lineItems)) {
+            if ($gateway->newCartOnExpressCheckout && !empty($lineItems)) {
                 // Clean out cart
                 $cartService->forgetCart();
 

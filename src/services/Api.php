@@ -55,9 +55,11 @@ class Api extends Component
             return null;
         }
 
+        $gateway = Vipps::$plugin->getPayments()->getGateway();
+
         return [
             'Authorization'             => 'Bearer ' . $token,
-            'ocp-apim-subscription-key' => Vipps::$plugin->getSettings()->subscriptionKeyAccessToken,
+            'ocp-apim-subscription-key' => $gateway->subscriptionKeyAccessToken,
         ];
     }
 
@@ -206,18 +208,18 @@ class Api extends Component
 
     private function _getDefaultHeaders(): array
     {
-        $date     = gmdate('c');
-        $ip       = $_SERVER['SERVER_ADDR'];
-        $settings = Vipps::$plugin->getPayments()->getGateway();
-        $headers  = [
+        $date    = gmdate('c');
+        $ip      = $_SERVER['SERVER_ADDR'];
+        $gateway = Vipps::$plugin->getPayments()->getGateway();
+        $headers = [
             'content-type'              => 'application/json',
             'X-Request-Id'              => $requestId = 1,
             'X-TimeStamp'               => $date,
             'X-Source-Address'          => $ip,
             'cache-control'             => 'no-cache',
-            'ocp-apim-subscription-key' => Craft::parseEnv($settings->subscriptionKeyAccessToken),
-            'client_id'                 => Craft::parseEnv($settings->clientId),
-            'client_secret'             => Craft::parseEnv($settings->clientSecret),
+            'ocp-apim-subscription-key' => Craft::parseEnv($gateway->subscriptionKeyAccessToken),
+            'client_id'                 => Craft::parseEnv($gateway->clientId),
+            'client_secret'             => Craft::parseEnv($gateway->clientSecret),
         ];
 
         if ($tokenHeader = $this->getAccessTokenHeader()) {

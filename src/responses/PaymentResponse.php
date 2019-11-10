@@ -37,6 +37,7 @@ class PaymentResponse implements RequestResponseInterface
     private $_processing = false;
 
     private $_error;
+    private $_code = 200;
 
     /**
      * Response constructor.
@@ -46,6 +47,16 @@ class PaymentResponse implements RequestResponseInterface
     public function __construct($data)
     {
         $this->data = $data;
+        $statusCode = $this->data['statusCode'] ?? null;
+        $message    = $this->data['message'] ?? null;
+
+        if ($statusCode) {
+            $this->_code = $statusCode;
+        }
+
+        if ($statusCode && $statusCode !== 200) {
+            $this->_error = $message;
+        }
 
         if (isset($this->data[0]['errorMessage'])) {
             $this->_error = $this->data[0]['errorMessage'];
@@ -148,7 +159,7 @@ class PaymentResponse implements RequestResponseInterface
      */
     public function getCode(): string
     {
-        return '200';
+        return $this->_code;
     }
 
     /**
