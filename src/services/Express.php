@@ -89,12 +89,14 @@ class Express extends Component
     {
         $data    = array_filter([
             'id'      => $purchasable->id ?? null,
-            'qty'     => $config['quantity'] ?? 1,
+            'qty'     => $config['quantity'] ?? $config['qty'] ?? 1,
             'note'    => $config['note'] ?? null,
             'options' => $config['options'] ?? [],
         ]);
         $payload = [
-            'purchasables' => [$data],
+            'purchasables' => [
+                1 => $data,
+            ],
         ];
 
         if (!$purchasable) {
