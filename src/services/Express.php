@@ -51,7 +51,9 @@ class Express extends Component
      * @param array $config
      *
      * @return string
-     * @throws \Twig_Error_Loader
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
      * @throws \yii\base\Exception
      */
     public function getButton($purchasable = null, array $config = []): string
