@@ -84,7 +84,7 @@ This is an overview that shows you where to get the different config values thro
 | **clientId** | Client ID | Utvikler -> Select _Showing test keys_ -> Show keys -> Client Id | String |
 | **clientSecret** | Client Secret | Utvikler -> Select _Showing test keys_ -> Show keys -> Client Secret | String |
 | **subscriptionKeyAccessToken** | Subscription Key for authorizing Vipps API calls | Utvikler -> Select _Showing test keys_ -> Show keys -> Primary or secondary key | String |
-| **merchantSerialNumber** | Merchant Serial Number | Applications -> Saleunit Serial Number | String |
+| **merchantSerialNumber** | Merchant Serial Number | Utvikler -> Select _Showing test keys_ -> Merchant Serial Number | String |
 | **transactionText** | This text will show up in the Vipps app when a customer is paying |  | String |
 | **expressCheckout** | Enable Express Checkout | | `true/false` |  
 | **addItemToCartIfAlreadyExists** | On Express Checkout, this will decide if a item should be added to the existing cart instead of replaced | | `true/false` |
