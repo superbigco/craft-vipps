@@ -1,5 +1,11 @@
 {% set iconUrl = view.getAssetManager().getPublishedUrl('@superbig/vipps/assetbundles/vippsexpress/dist', true) ~ '/img/hurtigkasse.svg' %}
 {% set expressButtonId = 'jsVippsExpressButton' ~ random(2000, 9999) %}
+{% set params = {
+    id: purchasable ? purchasable.id : null,
+    qty: config.quantity ?? config.qty ?? 1,
+    note: config.note ?? null,
+    options: config.options ?? [],
+} %}
 <button class="vipps-express-checkout{{ class ? ' ' ~ class : '' }}" type="button" id="{{ expressButtonId }}">
     <img alt="{{ title }}" border=0 src="{{ iconUrl }}">
 </button>
@@ -15,7 +21,15 @@
             <form name="{{ expressButtonId ~ 'Form' }}" method="post" action="{{ siteUrl('vipps/express/checkout') }}">
                 {{ csrfInput() }}
                 {% if purchasable %}
-                <input type="hidden" name="purchasables[][id]" value="{{ purchasable.id }}">
+                    {% for key,value in params %}
+                        {% if key == 'options' %}
+                            {% for optionKey, optionValue in value %}
+                                <input type="hidden" name="purchasables[1][{{ key }}][{{ optionKey }}]" value="{{ optionValue }}">
+                            {% endfor %}
+                        {% else %}
+                            <input type="hidden" name="purchasables[1][{{ key }}]" value="{{ value }}">
+                        {% endif %}
+                    {% endfor %}
                 {% endif %}
             </form>
         `;
