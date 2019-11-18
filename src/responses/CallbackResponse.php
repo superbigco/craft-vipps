@@ -23,6 +23,14 @@ use craft\base\Model;
  */
 class CallbackResponse implements RequestResponseInterface
 {
+    const STATUS_SALE           = 'SALE';
+    const STATUS_RESERVE        = 'RESERVE';
+    const STATUS_RESERVED       = 'RESERVED';
+    const STATUS_RESERVE_FAILED = 'RESERVE_FAILED';
+    const STATUS_SALE_FAILED    = 'SALE_FAILED';
+    const STATUS_CANCELLED      = 'CANCELLED';
+    const STATUS_REJECTED       = 'REJECTED';
+
     /**
      * @var
      */
@@ -67,7 +75,15 @@ class CallbackResponse implements RequestResponseInterface
      */
     public function isSuccessful(): bool
     {
-        return !isset($this->data['errorInfo']) && !isset($this->data['callbackErrorInfo']) && strtolower($this->data['transactionInfo']['status']) !== 'cancelled';
+        $error  = \data_get($this->data, 'errorInfo') || \data_get($this->data, 'callbackErrorInfo');
+        $status = \data_get($this->data, 'transactionInfo.status');
+
+        return !$error &&
+            \in_array($status, [
+                self::STATUS_RESERVE,
+                self::STATUS_RESERVED,
+                self::STATUS_SALE,
+            ]);
     }
 
     /**
