@@ -25,6 +25,15 @@ use superbig\vipps\services\Payments;
  */
 trait Services
 {
+    public function initComponents()
+    {
+        $this->setComponents([
+            'payments' => Payments::class,
+            'express'  => Express::class,
+            'api'      => Api::class,
+        ]);
+    }
+
     /**
      * @return Payments The Payments service
      */

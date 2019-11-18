@@ -17,10 +17,7 @@ use craft\commerce\services\OrderHistories;
 use craft\web\twig\variables\CraftVariable;
 use superbig\vipps\gateways\Gateway;
 use superbig\vipps\helpers\StringHelper;
-use superbig\vipps\services\Api;
-use superbig\vipps\services\Payments as PaymentsService;
-use superbig\vipps\services\Express as ExpressService;
-use superbig\vipps\services\Api as ApiService;
+
 use superbig\vipps\models\Settings;
 
 use Craft;
@@ -81,11 +78,7 @@ class Vipps extends Plugin
         parent::init();
         self::$plugin = $this;
 
-        $this->setComponents([
-            'payments' => PaymentsService::class,
-            'express'  => ExpressService::class,
-            'api'      => Api::class,
-        ]);
+        $this->initComponents();
 
         self::$commerceInstalled = class_exists(CommercePlugin::class);
 
