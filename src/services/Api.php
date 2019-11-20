@@ -209,7 +209,8 @@ class Api extends Component
     private function _getDefaultHeaders(): array
     {
         $date    = gmdate('c');
-        $ip      = $_SERVER['SERVER_ADDR'];
+        $request = Craft::$app->getRequest();
+        $ip      = !$request->getIsConsoleRequest() ? $request->getUserIP() : null;
         $gateway = Vipps::$plugin->getPayments()->getGateway();
         $headers = [
             'content-type'              => 'application/json',
