@@ -110,6 +110,8 @@ class CallbackController extends Controller
             $shippingDetails = $payload['shippingDetails'];
             $addressPayload  = $shippingDetails['address'];
             $address         = new Address([
+                'firstName' => \data_get($payload, 'userDetails.firstName'),
+                'lastName'  => \data_get($payload, 'userDetails.lastName'),
                 'address1'  => $addressPayload['addressLine1'] ?? null,
                 'address2'  => $addressPayload['addressLine2'] ?? null,
                 'city'      => $addressPayload['city'],
