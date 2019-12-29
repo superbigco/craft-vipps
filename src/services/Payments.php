@@ -18,8 +18,10 @@ use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
 use craft\commerce\records\Transaction as TransactionRecord;
 use craft\db\Query;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use superbig\vipps\gateways\Gateway;
+use superbig\vipps\helpers\LogToFile;
 use superbig\vipps\models\PaymentModel;
 use superbig\vipps\models\PaymentRequestModel;
 use superbig\vipps\records\PaymentRecord;
@@ -251,7 +253,8 @@ class Payments extends Component
                 }
             }
         } catch (\Exception $e) {
-
+            LogToFile::error('Not able to change status: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            Craft::$app->getErrorHandler()->logException($e);
         }
     }
 
