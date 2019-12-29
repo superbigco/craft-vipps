@@ -274,6 +274,7 @@ class Payments extends Component
 
     public function getLineItemsAsText(Order $order): string
     {
+        // @todo Crop?
         $lineItems = $order->getLineItems();
         $lines     = array_map(function(LineItem $item) {
             $variant = $item->getPurchasable();

@@ -11,9 +11,11 @@
 namespace superbig\vipps\models;
 
 use craft\commerce\elements\Order;
+use craft\commerce\models\Settings;
 use craft\commerce\models\Transaction;
 use craft\helpers\UrlHelper;
 use DateTime;
+use superbig\vipps\helpers\LogToFile;
 use superbig\vipps\helpers\StringHelper;
 use superbig\vipps\Vipps;
 
@@ -71,8 +73,9 @@ class PaymentRequestModel extends Model
         $timestamp      = (new \DateTime())->format(DateTime::ATOM);
 
         // Order info
-        $orderId             = $this->order->id;
-        $fallbackUrl         = Vipps::$plugin->payments->getFallbackUrl($this->order);
+        $orderId     = $this->order->id;
+        $fallbackUrl = Vipps::$plugin->payments->getFallbackUrl($this->order);
+        // @todo Should check if price is set to Settings::MINIMUM_TOTAL_PRICE_STRATEGY_SHIPPING
         $orderTotalMinorUnit = $this->order->getTotalPrice() * 100;
         $billingAddress      = $this->order->getBillingAddress();
         $phoneNumber         = !empty($billingAddress->phone) ? $billingAddress->phone : '48059154';

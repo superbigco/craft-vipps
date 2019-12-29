@@ -98,6 +98,7 @@ class CallbackController extends Controller
             ]);
         }
 
+        // @todo Check if total amount is less than x NOK? Or if there is earlier successful authorization attempts
         // If it's successful already, we're good.
         if (Plugin::getInstance()->getTransactions()->isTransactionSuccessful($transaction)) {
             return true;
@@ -106,6 +107,7 @@ class CallbackController extends Controller
         $response = new CallbackResponse($payload);
 
         if ($response->isExpress()) {
+            // @todo This is hardcoded while Vipps only support Norway
             $country         = Plugin::getInstance()->getCountries()->getCountryByIso('NO');
             $shippingDetails = $payload['shippingDetails'];
             $addressPayload  = $shippingDetails['address'];
@@ -209,6 +211,9 @@ class CallbackController extends Controller
     public function actionConsentRemoval(string $userId = null)
     {
         // Delete customer details
+        // @todo Get user
+        // @todo Get other things?
+        $user = $userId;
 
         return $this->asJson([
             'success' => true,
