@@ -13,6 +13,7 @@ namespace superbig\vipps\controllers;
 use craft\commerce\errors\PaymentException;
 use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
+use superbig\vipps\helpers\LogToFile;
 use superbig\vipps\models\PaymentRequestModel;
 use superbig\vipps\Vipps;
 
@@ -136,6 +137,8 @@ class ExpressController extends Controller
                 }
 
                 $session->setError($customError);
+                LogToFile::error($customError . " @ " . __METHOD__);
+
                 Craft::$app->getUrlManager()->setRouteParams(compact('paymentForm'));
 
                 return null;
@@ -152,11 +155,17 @@ class ExpressController extends Controller
             } catch (PaymentException $exception) {
                 $customError = $exception->getMessage();
                 $success     = false;
+                $method      = __METHOD__;
+                $error       = "{$customError} @ {$method}";
+
+                LogToFile::error($error);
             }
         }
         else {
             $customError = Craft::t('commerce', 'Invalid payment or order. Please review.');
             $success     = false;
+
+            LogToFile::error('Invalid payment or order. Please review.');
         }
 
         if (!$success) {
