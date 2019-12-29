@@ -11,6 +11,8 @@
 namespace superbig\vipps\responses;
 
 use craft\commerce\base\RequestResponseInterface;
+use superbig\vipps\helpers\Currency;
+use superbig\vipps\helpers\LogToFile;
 use superbig\vipps\Vipps;
 
 use Craft;
@@ -200,14 +202,17 @@ class CallbackResponse implements RequestResponseInterface
     /**
      * Returns paid amount for this transaction
      *
+     * @param bool $convert
+     *
      * @return int
      */
     public function getAmount($convert = true): int
     {
-        $amount = $this->data['transactionInfo']['amount'] ?? 0;
+        $amount = data_get($this->data, 'transactionInfo.amount', 0);
 
         if ($convert) {
-            return $amount / 100;
+            // @todo Use helper method for this
+            $amount = $amount / 100;
         }
 
         return $amount;
