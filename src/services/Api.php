@@ -16,6 +16,7 @@ use craft\helpers\UrlHelper;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
+use superbig\vipps\helpers\LogToFile;
 use function GuzzleHttp\Psr7\build_query;
 use superbig\vipps\Vipps;
 
@@ -158,6 +159,7 @@ class Api extends Component
 
     private function _getAccessToken()
     {
+        // @todo Cache this?
         if (!$this->_accessToken) {
             $url                = 'accessToken/get';
             $response           = $this->post($url, []);
@@ -202,8 +204,7 @@ class Api extends Component
             );
         }
 
-
-        Craft::warning($error, 'vipps');
+        LogToFile::error($error);
     }
 
     private function _getDefaultHeaders(): array
