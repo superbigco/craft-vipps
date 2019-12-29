@@ -364,15 +364,31 @@ class CallbackController extends Controller
 
     public function getPayload()
     {
-        $payload = Json::decodeIfJson((string)Craft::$app->getRequest()->getRawBody());
+        $body    = (string)Craft::$app->getRequest()->getRawBody();
+        $payload = Json::decodeIfJson($body);
         $headers = Craft::$app->getRequest()->getHeaders();
 
-        $path = Craft::$app->getPath()->getStoragePath() . '/vipps.txt';
-        //@file_put_contents($path, print_r($payload, true), FILE_APPEND);
-        //@file_put_contents($path, print_r($headers, true), FILE_APPEND);
-        //@file_put_contents($path, (string)Craft::$app->getRequest()->getRawBody(), FILE_APPEND);
+        $message = Craft::t(
+            'vipps',
+            "Payload received from Vipps:\n{body}\n\nHeaders:\n{headers}",
+            [
+                'body'    => $body,
+                'headers' => Json::encode($headers),
+            ]
+        );
+        LogToFile::info($message);
 
         if (!$payload) {
+            $error = Craft::t(
+                'vipps',
+                "Invalid payload received from Vipps:\n{body}\n\nHeaders:\n{headers}",
+                [
+                    'body'    => $body,
+                    'headers' => Json::encode($headers),
+                ]
+            );
+            LogToFile::error($error);
+
             throw new HttpException(400, 'Invalid payload');
         }
 
@@ -387,6 +403,15 @@ class CallbackController extends Controller
         $authToken = $gateway->getAuthToken();
 
         if (!$token || $authToken !== $token) {
+            $error = Craft::t(
+                'vipps',
+                "Invalid auth token received from Vipps:\n{token}",
+                [
+                    'token' => $token,
+                ]
+            );
+            LogToFile::error($error);
+
             throw new HttpException(400, 'Invalid auth token');
         }
 
