@@ -18,6 +18,8 @@ use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
 use craft\commerce\records\Transaction as TransactionRecord;
 use craft\helpers\Json;
+use superbig\vipps\helpers\Currency;
+use superbig\vipps\helpers\LogToFile;
 use superbig\vipps\responses\CallbackResponse;
 use superbig\vipps\Vipps;
 
@@ -79,7 +81,12 @@ class CallbackController extends Controller
      *
      * @return mixed
      * @throws HttpException
-     * @throws \craft\commerce\errors\TransactionException
+     * @throws NotFoundHttpException
+     * @throws TransactionException
+     * @throws \Throwable
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function actionComplete($orderId = null)
     {
@@ -87,12 +94,16 @@ class CallbackController extends Controller
         $transaction = Vipps::$plugin->getPayments()->getTransactionByShortId($orderId);
 
         if (!$transaction) {
+            LogToFile::error("Could not find transaction {$orderId}");
+
             throw new NotFoundHttpException('Could not find transaction.', 401);
         }
 
         $order = $transaction->getOrder();
 
         if ($order->getIsPaid()) {
+            LogToFile::info("Skipping {$orderId} because order already is paid");
+
             return $this->asJson([
                 'success' => true,
             ]);
@@ -101,6 +112,8 @@ class CallbackController extends Controller
         // @todo Check if total amount is less than x NOK? Or if there is earlier successful authorization attempts
         // If it's successful already, we're good.
         if (Plugin::getInstance()->getTransactions()->isTransactionSuccessful($transaction)) {
+            LogToFile::info('Skipping because there already is a successful transactions');
+
             return true;
         }
 
@@ -130,16 +143,41 @@ class CallbackController extends Controller
             }
 
             $order->recalculate();
-            Craft::$app->getElements()->saveElement($order, false);
+
+            if (!Craft::$app->getElements()->saveElement($order, false)) {
+                LogToFile::error(Craft::t(
+                    'vipps',
+                    '(Vipps) Failed to save order after Express callback and address update: {error}',
+                    [
+                        'error' => Json::encode($order->getErrors()),
+                    ]));
+            }
         }
 
         $childTransaction = Plugin::getInstance()->getTransactions()->createTransaction(null, $transaction);
 
         if ($response->isExpress()) {
+            $amount = $response->getAmount(false) / 100;
+
             // Make sure the amount is correct since it can change on the Vipps side
             // when customer selects shipping method
-            $childTransaction->amount        = $response->getAmount();
-            $childTransaction->paymentAmount = $response->getAmount();
+            $orderTotal = $order->getTotalPrice();
+            if ($orderTotal !== $amount) {
+                $diff = $orderTotal - $amount;
+                LogToFile::info("The paid amount ({$amount}) and order total ({$orderTotal}) did not match. There was a discrepancy of {$diff}");
+
+                // Check if there is a minor discrepancy
+                if (0.10 > $diff) {
+                    LogToFile::info('The discrepancy is below 0.10 - setting transaction to order total.');
+
+                    $childTransaction->amount        = $orderTotal;
+                    $childTransaction->paymentAmount = $orderTotal;
+                }
+                else {
+                    $childTransaction->amount        = $amount;
+                    $childTransaction->paymentAmount = $amount;
+                }
+            }
         }
 
         $this->_updateTransaction($childTransaction, $response);
@@ -168,7 +206,10 @@ class CallbackController extends Controller
     private function _saveTransaction($child)
     {
         if (!Plugin::getInstance()->getTransactions()->saveTransaction($child)) {
-            throw new TransactionException('Error saving transaction: ' . implode(', ', $child->errors));
+            $error = 'Error saving transaction: ' . implode(', ', $child->errors);
+
+            LogToFile::error($error);
+            throw new TransactionException($error);
         }
     }
 
