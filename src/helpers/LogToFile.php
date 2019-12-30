@@ -126,4 +126,9 @@ class LogToFile
             Craft::getLogger()->log($message, $level, $handle);
         }
     }
+
+    public static function encodeForLog($data)
+    {
+        return Json::encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
 }
