@@ -73,17 +73,20 @@ class PaymentRequestModel extends Model
         $timestamp      = (new \DateTime())->format(DateTime::ATOM);
 
         // Order info
-        $orderId     = $this->order->id;
-        $fallbackUrl = Vipps::$plugin->payments->getFallbackUrl($this->order);
-        // @todo Should check if price is set to Settings::MINIMUM_TOTAL_PRICE_STRATEGY_SHIPPING
-        $orderTotalMinorUnit = $this->order->getTotalPrice() * 100;
-        $billingAddress      = $this->order->getBillingAddress();
-        $phoneNumber         = !empty($billingAddress->phone) ? $billingAddress->phone : '48059154';
-        $gateway             = Vipps::$plugin->payments->getGateway();
-        $billingAddress      = $this->order->getBillingAddress();
-        $settings            = $gateway;
+        $orderId        = $this->order->id;
+        $fallbackUrl    = Vipps::$plugin->getPayments()->getFallbackUrl($this->order);
+        $billingAddress = $this->order->getBillingAddress();
+        $phoneNumber    = !empty($billingAddress->phone) ? $billingAddress->phone : '48059154';
+        $gateway        = Vipps::$plugin->getPayments()->getGateway();
+        $billingAddress = $this->order->getBillingAddress();
 
-        $payload = [
+        // Getting amount
+        // Note: We have to convert it to int in this sequence because Order::getTotalPrice() returns it as double
+        // which might have unseen decimals which leads to weird results like 1259,09 when everywhere else its 1259,10
+        // @todo Should check if price is set to Settings::MINIMUM_TOTAL_PRICE_STRATEGY_SHIPPING
+        $orderTotal          = $this->order->getTotalPrice();
+        $orderTotalMinorUnit = intval(round(floatval("{$orderTotal}") * 100, 2));
+        $payload             = [
             'customerInfo' => [
                 'mobileNumber' => '',
             ],
