@@ -73,7 +73,7 @@ class Gateway extends BaseGateway
      */
     public function authorize(Transaction $transaction, BasePaymentForm $form): RequestResponseInterface
     {
-        $request = Vipps::$plugin->payments->intiatePaymentFromGateway($transaction);
+        $request = Vipps::$plugin->getPayments()->intiatePaymentFromGateway($transaction);
 
         return $request;
     }
