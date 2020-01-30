@@ -198,29 +198,6 @@ class Payments extends Component
         return new CaptureResponse($response);
     }
 
-    public function paymentStatus($orderId = null)
-    {
-        $response = Vipps::$plugin->api->get("/ecomm/v2/payments/{$orderId}/details");
-
-        dd($response);
-    }
-
-    public function capturePayment($orderId = null)
-    {
-        $payload  = [];
-        $response = Vipps::$plugin->api->post("/ecomm/v2/payments/{$orderId}/capture", $payload);
-
-        dd($response);
-    }
-
-    public function refundPayment($orderId = null)
-    {
-        $payload  = [];
-        $response = Vipps::$plugin->api->post("/ecomm/v2/payments/{$orderId}/refund", $payload);
-
-        dd($response);
-    }
-
     public function onStatusChange(OrderStatusEvent $e)
     {
         try {
