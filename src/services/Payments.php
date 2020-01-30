@@ -21,6 +21,7 @@ use craft\db\Query;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use superbig\vipps\gateways\Gateway;
+use superbig\vipps\helpers\Currency;
 use superbig\vipps\helpers\LogToFile;
 use superbig\vipps\models\PaymentModel;
 use superbig\vipps\models\PaymentRequestModel;
@@ -179,7 +180,7 @@ class Payments extends Component
         $authorizedTransation = $this->getSuccessfulTransactionForOrder($order);
         $parentTransaction    = $authorizedTransation->getParent();
         $gateway              = $this->getGateway();
-        $amount               = (int)$transaction->amount * 100;
+        $amount               = Currency::roundAndConvertToMinorUnit($transaction->amount);
         $transactionText      = !empty($transaction->note) ? $transaction->note : $order->getEmail();
         //dd($parentTransaction->reference, $amount, $transactionText);
         $response = Vipps::$plugin->api->post("/ecomm/v2/payments/{$parentTransaction->reference}/refund", [

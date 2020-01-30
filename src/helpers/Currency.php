@@ -16,4 +16,9 @@ class Currency
     {
         return \round($amount, $precision);
     }
+
+    public static function roundAndConvertToMinorUnit($amount)
+    {
+        return intval(round(floatval("{$amount}") * 100, 2));
+    }
 }
