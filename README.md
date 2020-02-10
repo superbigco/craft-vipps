@@ -2,8 +2,6 @@
 
 Integrate Craft Commerce with Vipps.
 
-_NOTE: This plugin is in beta and should be tested properly before being put in production._
-
 ![Screenshot](resources/img/icon.png)
 
 ## Requirements
