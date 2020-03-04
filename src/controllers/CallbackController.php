@@ -269,59 +269,68 @@ class CallbackController extends Controller
      */
     public function actionShippingDetails(string $orderId = null)
     {
-        $payload = $this->getPayload();
-
+        $methods     = [];
+        $payload     = $this->getPayload();
+        $addressId   = $payload['addressId'] ?? null;
         $transaction = Vipps::$plugin->getPayments()->getTransactionByShortId($orderId);
 
         if (!$transaction) {
             throw new NotFoundHttpException('Could not find transaction.', 401);
         }
 
-        $order         = $transaction->getOrder();
-        $addressId     = $payload['addressId'] ?? null;
-        $isFirst       = true;
-        $currentHandle = $order->shippingMethodHandle;
-        // $iso           = $payload['country'];
-        $country = Plugin::getInstance()->getCountries()->getCountryByIso('NO');
-        $address = new Address([
-            'address1'  => $payload['addressLine1'] ?? null,
-            'address2'  => $payload['addressLine2'] ?? null,
-            'city'      => $payload['city'],
-            'zipCode'   => $payload['postCode'],
-            'countryId' => $country->id,
-        ]);
+        try {
+            $order         = $transaction->getOrder();
+            $isFirst       = true;
+            $currentHandle = $order->shippingMethodHandle;
+            // $iso           = $payload['country'];
+            $country = Plugin::getInstance()->getCountries()->getCountryByIso('NO');
+            $address = new Address([
+                'address1'  => $payload['addressLine1'] ?? null,
+                'address2'  => $payload['addressLine2'] ?? null,
+                'city'      => $payload['city'],
+                'zipCode'   => $payload['postCode'],
+                'countryId' => $country->id,
+            ]);
 
-        $order->setBillingAddress($address);
-        $order->setShippingAddress($address);
+            $order->setBillingAddress($address);
+            $order->setShippingAddress($address);
 
-        $methods = array_map(function(ShippingMethod $method) use ($order, &$isFirst, $currentHandle) {
-            $price     = (string)$method->getPriceForOrder($order);
-            $isDefault = 'N';
+            $methods = array_map(function(ShippingMethod $method) use ($order, &$isFirst, $currentHandle) {
+                $price     = (string)$method->getPriceForOrder($order);
+                $isDefault = 'N';
 
-            if ((!$currentHandle && $isFirst) || $currentHandle === $method->getHandle()) {
-                $isDefault = 'Y';
+                if ((!$currentHandle && $isFirst) || $currentHandle === $method->getHandle()) {
+                    $isDefault = 'Y';
+                }
+
+                return [
+                    'isDefault'        => $isDefault,
+                    // 'priority'         => '0',
+                    'shippingCost'     => $price,
+                    'shippingMethod'   => $method->getName(),
+                    'shippingMethodId' => $method->getHandle(),
+                ];
+            }, $order->getAvailableShippingMethods());
+
+            // Send something back if no shipping is required/no results is returned
+            if (empty($methods)) {
+                $methods = [
+                    [
+                        'isDefault'        => 'Y',
+                        'priority'         => '0',
+                        'shippingCost'     => '0.00',
+                        'shippingMethod'   => Craft::t('vipps', 'No shipping required'),
+                        'shippingMethodId' => 'Free',
+                    ],
+                ];
             }
+        } catch (\Exception $e) {
+            $error = Craft::t('vipps', 'Failed to return shipping details: {error}', [
+                'error' => "{$e->getMessage()} @ {$e->getFile()}:{$e->getLine()}",
+            ]);
+            LogToFile::error($error);
 
-            return [
-                'isDefault'        => $isDefault,
-                // 'priority'         => '0',
-                'shippingCost'     => $price,
-                'shippingMethod'   => $method->getName(),
-                'shippingMethodId' => $method->getHandle(),
-            ];
-        }, $order->getAvailableShippingMethods());
-
-        // Send something back if no shipping is required/no results is returned
-        if (empty($methods)) {
-            $methods = [
-                [
-                    'isDefault'        => 'Y',
-                    'priority'         => '0',
-                    'shippingCost'     => '0.00',
-                    'shippingMethod'   => Craft::t('vipps', 'No shipping required'),
-                    'shippingMethodId' => 'Free',
-                ],
-            ];
+            throw $e;
         }
 
         $result = [
