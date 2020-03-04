@@ -21,4 +21,9 @@ class Currency
     {
         return intval(round(floatval("{$amount}") * 100, 2));
     }
+
+    public static function convertFromMinorUnit($amount)
+    {
+        return $amount / 100;
+    }
 }
