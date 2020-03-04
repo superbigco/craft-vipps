@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - If there is a discrepancy between paid amount in Vipps and Commerce, it will now use the order total if the discrepancy is less than 0.10
 
 ### Fixed
+- Fixed marking order as completed on Express callback
 - Fixed class param for express checkout links 
 - Fixed payment amount for successful express transactions
 - Fixed missing address lines on Express payment that made status update fail silently
@@ -19,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ### Added
 - Added Twig params to express button 
+- Added better error handling in shipping callback
 
 ## 1.0.2 - 2019-06-10
 ### Fixed
