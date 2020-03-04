@@ -37,7 +37,7 @@ class Gateway extends BaseGateway
     public $clientId                          = '';
     public $clientSecret                      = '';
     public $subscriptionKeyAccessToken        = '';
-    public $subscriptionKeyEcommerce        = '';
+    public $subscriptionKeyEcommerce          = '';
     public $merchantSerialNumber              = '';
     public $transactionText                   = '';
     public $testMode                          = false;
