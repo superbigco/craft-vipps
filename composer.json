@@ -24,9 +24,9 @@
         }
     ],
     "require": {
-        "craftcms/cms": "^3.1.0",
+        "craftcms/cms": "3.4.24",
         "craftcms/commerce": "^2.0|^3.0",
-        "tightenco/collect": "^5.7.0"
+        "tightenco/collect": "5.8.38"
     },
     "autoload": {
         "psr-4": {
