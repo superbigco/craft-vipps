@@ -18,6 +18,7 @@ use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
 use craft\commerce\records\Transaction as TransactionRecord;
 use craft\db\Query;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use superbig\vipps\gateways\Gateway;
@@ -43,12 +44,8 @@ class Payments extends Component
 {
     private $_express;
 
-    // Public Methods
-    // =========================================================================
-
-    /*
-     * @return mixed
-     */
+    /** @var Gateway */
+    private $_gateway;
 
     public function init()
     {
@@ -278,17 +275,18 @@ class Payments extends Component
 
     public function getGateway(): Gateway
     {
-        $gateways = Plugin::getInstance()->getGateways()->getAllCustomerEnabledGateways();
-        $gateway  = collect($gateways)
-            ->first(function($gateway) {
+        if (!$this->_gateway) {
+            $gateways = Plugin::getInstance()->getGateways()->getAllCustomerEnabledGateways();
+            $this->_gateway = ArrayHelper::firstWhere($gateways, function($gateway) {
                 return $gateway instanceof Gateway;
             });
 
-        if (!$gateway) {
-            throw new Exception('The Vipps gateway is not setup correctly.');
+            if (!$this->_gateway) {
+                throw new Exception('The Vipps gateway is not setup correctly.');
+            }
         }
 
-        return $gateway;
+        return $this->_gateway;
     }
 
     /**

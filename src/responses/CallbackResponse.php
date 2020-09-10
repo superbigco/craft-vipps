@@ -11,6 +11,7 @@
 namespace superbig\vipps\responses;
 
 use craft\commerce\base\RequestResponseInterface;
+use craft\helpers\ArrayHelper;
 use superbig\vipps\helpers\Currency;
 use superbig\vipps\helpers\LogToFile;
 use superbig\vipps\Vipps;
@@ -74,11 +75,12 @@ class CallbackResponse implements RequestResponseInterface
      * Returns whether or not the payment was successful.
      *
      * @return bool
+     * @throws \Exception
      */
     public function isSuccessful(): bool
     {
-        $error  = \data_get($this->data, 'errorInfo') || \data_get($this->data, 'callbackErrorInfo');
-        $status = \data_get($this->data, 'transactionInfo.status');
+        $error  = ArrayHelper::getValue($this->data, 'errorInfo') || ArrayHelper::getValue($this->data, 'callbackErrorInfo');
+        $status = ArrayHelper::getValue($this->data, 'transactionInfo.status');
 
         return !$error &&
             \in_array($status, [
@@ -208,7 +210,7 @@ class CallbackResponse implements RequestResponseInterface
      */
     public function getAmount($convert = true): int
     {
-        $amount = data_get($this->data, 'transactionInfo.amount', 0);
+        $amount = ArrayHelper::getValue($this->data, 'transactionInfo.amount', 0);
 
         if ($convert) {
             // @todo Use helper method for this
