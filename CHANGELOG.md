@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ### Added
 - Added `errorFallbackUrl` so you can differentiate between payment errors/cancellation and successful payments
+- Added [plugin info](https://www.vipps.no/developers-documentation/ecom/documentation/#optional-vipps-http-headers) to default request headers
+
+### Changed
+- Started initial translation work
+- Removed `tightenco/collect` dependency
 
 ## 1.0.3 - 2020-03-27
 
