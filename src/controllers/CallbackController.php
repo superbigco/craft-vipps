@@ -18,13 +18,14 @@ use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
 use craft\commerce\records\Transaction as TransactionRecord;
 use craft\helpers\Json;
-use superbig\vipps\helpers\Currency;
+use superbig\vipps\behavior\TransactionBehavior;
 use superbig\vipps\helpers\LogToFile;
 use superbig\vipps\responses\CallbackResponse;
 use superbig\vipps\Vipps;
 
 use Craft;
 use craft\web\Controller;
+use yii\base\Action;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -36,28 +37,8 @@ use yii\web\Response;
  */
 class CallbackController extends Controller
 {
-
-    // Protected Properties
-    // =========================================================================
-
-    /**
-     * @var    bool|array Allows anonymous access to this controller's actions.
-     *         The actions must be in 'kebab-case'
-     * @access protected
-     */
-    protected $allowAnonymous = ['complete', 'shipping-details', 'consent', 'process-webhook'];
-
-
-    // Public Properties
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
+    protected $allowAnonymous = ['complete', 'shipping-details', 'consent', 'process-webhook', 'return'];
     public $enableCsrfValidation = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @param \yii\base\Action $action
@@ -71,9 +52,48 @@ class CallbackController extends Controller
             return false;
         }
 
-        $this->verifyAuthToken();
+        $this->verifyAuthToken($action);
 
         return true;
+    }
+
+    public function actionReturn(string $orderId)
+    {
+        $error = null;
+        $transaction = Vipps::$plugin->getPayments()->getTransactionByShortId($orderId);
+
+        if (!$transaction) {
+            LogToFile::error("Could not find transaction {$orderId}");
+
+            throw new NotFoundHttpException('Could not find transaction.', 401);
+        }
+
+        $order = $transaction->getOrder();
+
+        if ($order->getIsPaid()) {
+            LogToFile::info("Skipping {$orderId} because order already is paid");
+
+            return $this->asJson([
+                'success' => true,
+            ]);
+        }
+
+        // @todo Check status here directly from Vipps?
+
+        /** @var TransactionBehavior|Transaction $lastTransaction */
+        $lastTransaction = $order->getLastTransaction();
+
+        if ($lastTransaction->isCancelled()) {
+            $error = Craft::t('vipps', 'transaction.cancelled');
+        }
+
+        if ($error) {
+            Craft::$app->getSession()->setError($error);
+
+            return $this->redirect(Vipps::$plugin->payments->getFallbackErrorUrl($order));
+        }
+
+        return $this->redirect(Vipps::$plugin->payments->getFallbackUrl($order));
     }
 
     /**
@@ -90,7 +110,7 @@ class CallbackController extends Controller
      */
     public function actionComplete($orderId = null)
     {
-        $payload     = $this->getPayload();
+        $payload = $this->getPayload();
         $transaction = Vipps::$plugin->getPayments()->getTransactionByShortId($orderId);
 
         if (!$transaction) {
@@ -121,16 +141,16 @@ class CallbackController extends Controller
 
         if ($response->isExpress()) {
             // @todo This is hardcoded while Vipps only support Norway
-            $country         = Plugin::getInstance()->getCountries()->getCountryByIso('NO');
+            $country = Plugin::getInstance()->getCountries()->getCountryByIso('NO');
             $shippingDetails = $payload['shippingDetails'];
-            $addressPayload  = $shippingDetails['address'];
-            $address         = new Address([
+            $addressPayload = $shippingDetails['address'];
+            $address = new Address([
                 'firstName' => \data_get($payload, 'userDetails.firstName'),
-                'lastName'  => \data_get($payload, 'userDetails.lastName'),
-                'address1'  => $addressPayload['addressLine1'] ?? null,
-                'address2'  => $addressPayload['addressLine2'] ?? null,
-                'city'      => $addressPayload['city'],
-                'zipCode'   => $addressPayload['zipCode'],
+                'lastName' => \data_get($payload, 'userDetails.lastName'),
+                'address1' => $addressPayload['addressLine1'] ?? null,
+                'address2' => $addressPayload['addressLine2'] ?? null,
+                'city' => $addressPayload['city'],
+                'zipCode' => $addressPayload['zipCode'],
                 'countryId' => $country->id,
             ]);
 
@@ -162,6 +182,7 @@ class CallbackController extends Controller
             // Make sure the amount is correct since it can change on the Vipps side
             // when customer selects shipping method
             $orderTotal = $order->getTotalPrice();
+
             if ($orderTotal !== $amount) {
                 $diff = $orderTotal - $amount;
                 LogToFile::info("The paid amount ({$amount}) and order total ({$orderTotal}) did not match. There was a discrepancy of {$diff}");
@@ -170,11 +191,11 @@ class CallbackController extends Controller
                 if (0.10 > $diff) {
                     LogToFile::info('The discrepancy is below 0.10 - setting transaction to order total.');
 
-                    $childTransaction->amount        = $orderTotal;
+                    $childTransaction->amount = $orderTotal;
                     $childTransaction->paymentAmount = $orderTotal;
                 }
                 else {
-                    $childTransaction->amount        = $amount;
+                    $childTransaction->amount = $amount;
                     $childTransaction->paymentAmount = $amount;
                 }
             }
@@ -194,6 +215,194 @@ class CallbackController extends Controller
         return $this->asJson([
             'success' => $success,
         ]);
+    }
+
+    /**
+     * @param string|null $userId
+     *
+     * @return mixed
+     */
+    public function actionConsentRemoval(string $userId = null)
+    {
+        // Delete customer details
+        // @todo Get user
+        // @todo Get other things?
+        $user = $userId;
+
+        return $this->asJson([
+            'success' => true,
+        ]);
+    }
+
+    /**
+     * @param string|null $orderId
+     *
+     * @return mixed
+     * @throws HttpException
+     */
+    public function actionShippingDetails(string $orderId = null)
+    {
+        $methods = [];
+        $payload = $this->getPayload();
+        $addressId = $payload['addressId'] ?? null;
+        $transaction = Vipps::$plugin->getPayments()->getTransactionByShortId($orderId);
+
+        if (!$transaction) {
+            throw new NotFoundHttpException('Could not find transaction.', 401);
+        }
+
+        try {
+            $order = $transaction->getOrder();
+            $isFirst = true;
+            $currentHandle = $order->shippingMethodHandle;
+            // $iso           = $payload['country'];
+            $country = Plugin::getInstance()->getCountries()->getCountryByIso('NO');
+            $address = new Address([
+                'address1' => $payload['addressLine1'] ?? null,
+                'address2' => $payload['addressLine2'] ?? null,
+                'city' => $payload['city'],
+                'zipCode' => $payload['postCode'],
+                'countryId' => $country->id,
+            ]);
+
+            $order->setBillingAddress($address);
+            $order->setShippingAddress($address);
+
+            $methods = array_map(function(ShippingMethod $method) use ($order, &$isFirst, $currentHandle) {
+                $price = (string)$method->getPriceForOrder($order);
+                $isDefault = 'N';
+
+                if ((!$currentHandle && $isFirst) || $currentHandle === $method->getHandle()) {
+                    $isDefault = 'Y';
+                }
+
+                return [
+                    'isDefault' => $isDefault,
+                    // 'priority'         => '0',
+                    'shippingCost' => $price,
+                    'shippingMethod' => $method->getName(),
+                    'shippingMethodId' => $method->getHandle(),
+                ];
+            }, $order->getAvailableShippingMethods());
+
+            // Send something back if no shipping is required/no results is returned
+            if (empty($methods)) {
+                $methods = [
+                    [
+                        'isDefault' => 'Y',
+                        'priority' => '0',
+                        'shippingCost' => '0.00',
+                        'shippingMethod' => Craft::t('vipps', 'No shipping required'),
+                        'shippingMethodId' => 'Free',
+                    ],
+                ];
+            }
+        } catch (\Exception $e) {
+            $error = Craft::t('vipps', 'Failed to return shipping details: {error}', [
+                'error' => "{$e->getMessage()} @ {$e->getFile()}:{$e->getLine()}",
+            ]);
+            LogToFile::error($error);
+
+            throw $e;
+        }
+
+        $result = [
+            'addressId' => \intval($addressId),
+            'orderId' => $orderId,
+            'shippingDetails' => array_values($methods),
+        ];
+
+        return $this->asJson($result);
+    }
+
+    /**
+     * @return Response
+     * @throws HttpException If webhook not expected.
+     */
+    public function actionProcessWebhook(): Response
+    {
+        $gatewayId = Craft::$app->getRequest()->getRequiredParam('gateway');
+        $gateway = Plugin::getInstance()->getGateways()->getGatewayById($gatewayId);
+
+        $response = null;
+
+        try {
+            if ($gateway && $gateway->supportsWebhooks()) {
+                $response = $gateway->processWebHook();
+            }
+        } catch (\Throwable $exception) {
+            $message = 'Exception while processing webhook: ' . $exception->getMessage() . "\n";
+            $message .= 'Exception thrown in ' . $exception->getFile() . ':' . $exception->getLine() . "\n";
+            $message .= 'Stack trace:' . "\n" . $exception->getTraceAsString();
+
+            Craft::error($message, 'commerce');
+
+            $response = Craft::$app->getResponse();
+            $response->setStatusCodeByException($exception);
+        }
+
+        return $response;
+    }
+
+    public function getPayload()
+    {
+        $body = (string)Craft::$app->getRequest()->getRawBody();
+        $payload = Json::decodeIfJson($body);
+        $headers = Craft::$app->getRequest()->getHeaders();
+
+        $message = Craft::t(
+            'vipps',
+            "Payload received from Vipps:\n{body}\n\nHeaders:\n{headers}",
+            [
+                'body' => $body,
+                'headers' => Json::encode($headers),
+            ]
+        );
+        LogToFile::info($message);
+
+        if (!$payload) {
+            $error = Craft::t(
+                'vipps',
+                "Invalid payload received from Vipps:\n{body}\n\nHeaders:\n{headers}",
+                [
+                    'body' => $body,
+                    'headers' => Json::encode($headers),
+                ]
+            );
+            LogToFile::error($error);
+
+            throw new HttpException(400, 'Invalid payload');
+        }
+
+        return $payload;
+    }
+
+    public function verifyAuthToken(Action $action)
+    {
+        $skipIds = ['return'];
+
+        if (in_array($action->id, $skipIds)) {
+            return false;
+        }
+
+        $token = Craft::$app->getRequest()->getHeaders()->get('authorization');
+        $gateway = Vipps::$plugin->payments->getGateway();
+        $authToken = $gateway->getAuthToken();
+
+        if (!$token || $authToken !== $token) {
+            $error = Craft::t(
+                'vipps',
+                "Invalid auth token received from Vipps:\n{token}",
+                [
+                    'token' => $token,
+                ]
+            );
+            LogToFile::error($error);
+
+            throw new HttpException(400, 'Invalid auth token');
+        }
+
+        return true;
     }
 
     /**
@@ -236,194 +445,11 @@ class CallbackController extends Controller
             $transaction->status = TransactionRecord::STATUS_FAILED;
         }
 
-        $transaction->response  = $response->getData();
-        $transaction->code      = $response->getCode();
+        $transaction->response = $response->getData();
+        $transaction->code = $response->getCode();
         $transaction->reference = $response->getTransactionReference();
-        $transaction->message   = $response->getMessage();
+        $transaction->message = $response->getMessage();
 
         $this->_saveTransaction($transaction);
-    }
-
-    /**
-     * @param string|null $userId
-     *
-     * @return mixed
-     */
-    public function actionConsentRemoval(string $userId = null)
-    {
-        // Delete customer details
-        // @todo Get user
-        // @todo Get other things?
-        $user = $userId;
-
-        return $this->asJson([
-            'success' => true,
-        ]);
-    }
-
-    /**
-     * @param string|null $orderId
-     *
-     * @return mixed
-     * @throws HttpException
-     */
-    public function actionShippingDetails(string $orderId = null)
-    {
-        $methods     = [];
-        $payload     = $this->getPayload();
-        $addressId   = $payload['addressId'] ?? null;
-        $transaction = Vipps::$plugin->getPayments()->getTransactionByShortId($orderId);
-
-        if (!$transaction) {
-            throw new NotFoundHttpException('Could not find transaction.', 401);
-        }
-
-        try {
-            $order         = $transaction->getOrder();
-            $isFirst       = true;
-            $currentHandle = $order->shippingMethodHandle;
-            // $iso           = $payload['country'];
-            $country = Plugin::getInstance()->getCountries()->getCountryByIso('NO');
-            $address = new Address([
-                'address1'  => $payload['addressLine1'] ?? null,
-                'address2'  => $payload['addressLine2'] ?? null,
-                'city'      => $payload['city'],
-                'zipCode'   => $payload['postCode'],
-                'countryId' => $country->id,
-            ]);
-
-            $order->setBillingAddress($address);
-            $order->setShippingAddress($address);
-
-            $methods = array_map(function(ShippingMethod $method) use ($order, &$isFirst, $currentHandle) {
-                $price     = (string)$method->getPriceForOrder($order);
-                $isDefault = 'N';
-
-                if ((!$currentHandle && $isFirst) || $currentHandle === $method->getHandle()) {
-                    $isDefault = 'Y';
-                }
-
-                return [
-                    'isDefault'        => $isDefault,
-                    // 'priority'         => '0',
-                    'shippingCost'     => $price,
-                    'shippingMethod'   => $method->getName(),
-                    'shippingMethodId' => $method->getHandle(),
-                ];
-            }, $order->getAvailableShippingMethods());
-
-            // Send something back if no shipping is required/no results is returned
-            if (empty($methods)) {
-                $methods = [
-                    [
-                        'isDefault'        => 'Y',
-                        'priority'         => '0',
-                        'shippingCost'     => '0.00',
-                        'shippingMethod'   => Craft::t('vipps', 'No shipping required'),
-                        'shippingMethodId' => 'Free',
-                    ],
-                ];
-            }
-        } catch (\Exception $e) {
-            $error = Craft::t('vipps', 'Failed to return shipping details: {error}', [
-                'error' => "{$e->getMessage()} @ {$e->getFile()}:{$e->getLine()}",
-            ]);
-            LogToFile::error($error);
-
-            throw $e;
-        }
-
-        $result = [
-            'addressId'       => \intval($addressId),
-            'orderId'         => $orderId,
-            'shippingDetails' => array_values($methods),
-        ];
-
-        return $this->asJson($result);
-    }
-
-    /**
-     * @return Response
-     * @throws HttpException If webhook not expected.
-     */
-    public function actionProcessWebhook(): Response
-    {
-        $gatewayId = Craft::$app->getRequest()->getRequiredParam('gateway');
-        $gateway   = Plugin::getInstance()->getGateways()->getGatewayById($gatewayId);
-
-        $response = null;
-
-        try {
-            if ($gateway && $gateway->supportsWebhooks()) {
-                $response = $gateway->processWebHook();
-            }
-        } catch (\Throwable $exception) {
-            $message = 'Exception while processing webhook: ' . $exception->getMessage() . "\n";
-            $message .= 'Exception thrown in ' . $exception->getFile() . ':' . $exception->getLine() . "\n";
-            $message .= 'Stack trace:' . "\n" . $exception->getTraceAsString();
-
-            Craft::error($message, 'commerce');
-
-            $response = Craft::$app->getResponse();
-            $response->setStatusCodeByException($exception);
-        }
-
-        return $response;
-    }
-
-    public function getPayload()
-    {
-        $body    = (string)Craft::$app->getRequest()->getRawBody();
-        $payload = Json::decodeIfJson($body);
-        $headers = Craft::$app->getRequest()->getHeaders();
-
-        $message = Craft::t(
-            'vipps',
-            "Payload received from Vipps:\n{body}\n\nHeaders:\n{headers}",
-            [
-                'body'    => $body,
-                'headers' => Json::encode($headers),
-            ]
-        );
-        LogToFile::info($message);
-
-        if (!$payload) {
-            $error = Craft::t(
-                'vipps',
-                "Invalid payload received from Vipps:\n{body}\n\nHeaders:\n{headers}",
-                [
-                    'body'    => $body,
-                    'headers' => Json::encode($headers),
-                ]
-            );
-            LogToFile::error($error);
-
-            throw new HttpException(400, 'Invalid payload');
-        }
-
-        return $payload;
-    }
-
-    public function verifyAuthToken()
-    {
-
-        $token     = Craft::$app->getRequest()->getHeaders()->get('authorization');
-        $gateway   = Vipps::$plugin->payments->getGateway();
-        $authToken = $gateway->getAuthToken();
-
-        if (!$token || $authToken !== $token) {
-            $error = Craft::t(
-                'vipps',
-                "Invalid auth token received from Vipps:\n{token}",
-                [
-                    'token' => $token,
-                ]
-            );
-            LogToFile::error($error);
-
-            throw new HttpException(400, 'Invalid auth token');
-        }
-
-        return true;
     }
 }

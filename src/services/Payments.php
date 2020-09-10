@@ -262,6 +262,10 @@ class Payments extends Component
         return implode("\n", $lines);
     }
 
+    public function getFallbackActionUrl(string $transactionId)
+    {
+        return UrlHelper::siteUrl('vipps/callbacks/v2/return/' . $transactionId);
+    }
 
     public function getFallbackUrl(Order $order): string
     {
@@ -269,6 +273,16 @@ class Payments extends Component
         $url        = Craft::parseEnv($gateway->fallbackUrl);
         $parsedUrl  = Craft::$app->getView()->renderObjectTemplate($url, $order);
         $defaultUrl = UrlHelper::siteUrl('/');
+
+        return !empty($parsedUrl) ? $parsedUrl : $defaultUrl;
+    }
+
+    public function getFallbackErrorUrl(Order $order): string
+    {
+        $gateway    = $this->getGateway();
+        $url        = Craft::parseEnv($gateway->errorFallbackUrl);
+        $parsedUrl  = Craft::$app->getView()->renderObjectTemplate($url, $order);
+        $defaultUrl = $this->getFallbackUrl($order);
 
         return !empty($parsedUrl) ? $parsedUrl : $defaultUrl;
     }

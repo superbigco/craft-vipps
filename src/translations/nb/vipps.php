@@ -15,5 +15,5 @@
  */
 return [
     'Vipps plugin loaded' => 'Vipps plugin loaded',
-    'transaction.cancelled' => 'The Vipps Payment was cancelled',
+    'transaction.cancelled' => 'Din Vipps-betaling ble avbrutt.',
 ];

@@ -10,11 +10,14 @@
 
 namespace superbig\vipps;
 
+use craft\commerce\models\Transaction;
 use craft\commerce\Plugin as CommercePlugin;
 use craft\commerce\services\Gateways;
 use craft\commerce\services\OrderAdjustments;
 use craft\commerce\services\OrderHistories;
+use craft\events\DefineBehaviorsEvent;
 use craft\web\twig\variables\CraftVariable;
+use superbig\vipps\behavior\TransactionBehavior;
 use superbig\vipps\gateways\Gateway;
 use superbig\vipps\helpers\StringHelper;
 
@@ -167,6 +170,10 @@ class Vipps extends Plugin
             }
         );
 
+        Event::on(Transaction::class, Transaction::EVENT_DEFINE_BEHAVIORS, function(DefineBehaviorsEvent $event) {
+           $event->behaviors[] = TransactionBehavior::class;
+        });
+
         // Handler: Plugins::EVENT_AFTER_LOAD_PLUGINS
         Event::on(
             Plugins::class,
@@ -195,6 +202,7 @@ class Vipps extends Plugin
                 $event->rules = array_merge($event->rules, [
                     'vipps/callbacks/v2/consents/<userId>'                  => 'vipps/callback/consent-removal',
                     'vipps/callbacks/v2/payments/<orderId>'                 => 'vipps/callback/complete',
+                    'vipps/callbacks/v2/return/<orderId>'                   => 'vipps/callback/return',
                     'vipps/callbacks/v2/payments/<orderId>/shippingDetails' => 'vipps/callback/shipping-details',
                     'vipps/express/checkout'                                => 'vipps/express/checkout',
                 ]);

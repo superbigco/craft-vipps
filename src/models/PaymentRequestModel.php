@@ -74,7 +74,7 @@ class PaymentRequestModel extends Model
 
         // Order info
         $orderId        = $this->order->id;
-        $fallbackUrl    = Vipps::$plugin->getPayments()->getFallbackUrl($this->order);
+        $fallbackUrl    = Vipps::$plugin->getPayments()->getFallbackActionUrl($this->getTransactionShortId());
         $billingAddress = $this->order->getBillingAddress();
         $phoneNumber    = !empty($billingAddress->phone) ? $billingAddress->phone : '48059154';
         $gateway        = Vipps::$plugin->getPayments()->getGateway();

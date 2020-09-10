@@ -47,6 +47,7 @@ class Gateway extends BaseGateway
     public $addItemToCartIfAlreadyExists      = false;
     public $newCartOnExpressCheckout          = true;
     public $fallbackUrl                       = '';
+    public $errorFallbackUrl                  = '';
     public $authToken                         = '';
     public $captureOnStatusChange             = false;
     public $captureStatusUid                  = '';

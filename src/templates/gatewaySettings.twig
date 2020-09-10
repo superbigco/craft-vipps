@@ -70,6 +70,17 @@
     suggestEnvVars: true,
 }) }}
 
+{{ autoSuggestField({
+    label: "Error Fallback URL"|t("vipps"),
+    instructions: "The user will be redirected here when a payment is cancelled, or some other error happens. If left empty, users will be redirect to the Fallback URL."|t("vipps"),
+    id: 'errorFallbackUrl',
+    name: 'errorFallbackUrl',
+    class: 'ltr',
+    value: gateway.errorFallbackUrl,
+    errors: gateway.getErrors('errorFallbackUrl'),
+    suggestEnvVars: true,
+}) }}
+
 {{ textField({
     label: "Auth token"|t("vipps"),
     instructions: "Token is used to verify callbacks from Vipps."|t("vipps"),
