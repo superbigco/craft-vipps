@@ -10,6 +10,7 @@
 
 namespace superbig\vipps\services;
 
+use craft\commerce\Plugin as CommercePlugin;
 use craft\helpers\Json;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -222,6 +223,10 @@ class Api extends Component
             'ocp-apim-subscription-key' => Craft::parseEnv($gateway->subscriptionKeyAccessToken),
             'client_id'                 => Craft::parseEnv($gateway->clientId),
             'client_secret'             => Craft::parseEnv($gateway->clientSecret),
+            'Vipps-System-Name' => 'craft-commerce',
+            'Vipps-System-Version' => CommercePlugin::getInstance()->getVersion(),
+            'Vipps-System-Plugin-Name' => 'craft-vipps',
+            'Vipps-System-Plugin-Version' => Vipps::$plugin->getVersion(),
         ];
 
         if ($tokenHeader = $this->getAccessTokenHeader()) {
