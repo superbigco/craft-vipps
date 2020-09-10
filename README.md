@@ -93,6 +93,10 @@ This is an overview that shows you where to get the different config values thro
 | **captureStatusUid** | The uid of the Order Status to capture automatically |  | String |
 | **useBillingPhoneAsVippsPhoneNumber** | Pull the Vipps phone number automatically from billing address, if set and not empty | | `true/false` | 
 
+### Callback URLs
+
+Note that all URLs passed to Vipps will have to be publicly available. Vipps will validate the URL, and return an error if its accessible from their servers. 
+
 ## Using Vipps
 
 ## Express Checkout Buttons
