@@ -87,6 +87,7 @@ This is an overview that shows you where to get the different config values thro
 | **addItemToCartIfAlreadyExists** | On Express Checkout, this will decide if a item should be added to the existing cart instead of replaced | | `true/false` |
 | **newCartOnExpressCheckout** | Creates a new cart on Express Checkout | | `true/false` | 
 | **fallbackUrl** | Vipps will redirect to this URL when a payment is completed or cancelled. |  | String |
+| **errorFallbackUrl** | If you want to override the fallback URL customers are returned to when a error happens, use this option |  | String |
 | **authToken** | Read-only - Token used to verify callbacks from Vipps |  | String |
 | **captureOnStatusChange** | Enable automatic capture when switching order to new Order Status | | `true/false` | 
 | **captureStatusUid** | The uid of the Order Status to capture automatically |  | String |
