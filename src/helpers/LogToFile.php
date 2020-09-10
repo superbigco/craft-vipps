@@ -131,4 +131,29 @@ class LogToFile
     {
         return Json::encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
+
+    public static function formatLogVariables($variables = [])
+    {
+        $variables = array_map(function($value) {
+            if (is_array($value)) {
+                $value = Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            }
+
+            return $value;
+        }, $variables);
+
+        return $variables;
+    }
+
+    public static function formatLogMessage($message, $variables = [])
+    {
+        if (is_array($message)) {
+            $message = Json::encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        }
+        else {
+            $message = Craft::t('vipps', $message, $variables);
+        }
+
+        return $message;
+    }
 }
