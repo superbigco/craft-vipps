@@ -61,7 +61,7 @@ class Api extends Component
 
         return [
             'Authorization'             => 'Bearer ' . $token,
-            'ocp-apim-subscription-key' => $gateway->subscriptionKeyAccessToken,
+            'ocp-apim-subscription-key' => Craft::parseEnv($gateway->subscriptionKeyAccessToken),
         ];
     }
 
