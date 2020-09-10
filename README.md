@@ -141,10 +141,6 @@ See the [Commerce docs on Add to Cart](https://docs.craftcms.com/commerce/v2/add
 
 See [Brand Guidelines](https://paper.dropbox.com/doc/Vipps-Payment-guidelines--AYLr~Jd2mNsXGXJV1IGf7FBLAg-tBvSIbJpzDrqBziYeQMCH) for more advice on how to use the payment buttons.
 
-## Known issues
-
-If there is a discrepancy between paid amount in Vipps and Commerce, it will now use the order total if the discrepancy is less than 0.10
-
 ## Get Support
 
 ### Discord
