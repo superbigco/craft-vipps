@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## 1.0.4 - 2020-09-10
 
 ### Added
 - Added `errorFallbackUrl` so you can differentiate between payment errors/cancellation and successful payments
@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Changed
 - Started initial translation work
 - Removed `tightenco/collect` dependency
+- Changed `craftcms/commerce` dependency to `^3.0`
 
 ### Fixed
 - Added parsing of environment variable for access token request
