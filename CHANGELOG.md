@@ -14,6 +14,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Started initial translation work
 - Removed `tightenco/collect` dependency
 
+### Fixed
+- Added parsing of environment variable for access token request
+
 ## 1.0.3 - 2020-03-27
 
 ### Changed
