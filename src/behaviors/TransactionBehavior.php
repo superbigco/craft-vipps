@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2018 Superbig
  */
 
-namespace superbig\vipps\behavior;
+namespace superbig\vipps\behaviors;
 
 use craft\commerce\models\Transaction;
 use craft\helpers\ArrayHelper;
