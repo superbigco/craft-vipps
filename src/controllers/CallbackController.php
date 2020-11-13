@@ -18,7 +18,7 @@ use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
 use craft\commerce\records\Transaction as TransactionRecord;
 use craft\helpers\Json;
-use superbig\vipps\behavior\TransactionBehavior;
+use superbig\vipps\behaviors\TransactionBehavior;
 use superbig\vipps\helpers\LogToFile;
 use superbig\vipps\responses\CallbackResponse;
 use superbig\vipps\Vipps;
