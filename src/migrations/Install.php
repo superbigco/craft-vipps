@@ -119,14 +119,6 @@ class Install extends Migration
             'transactionReference',
             true
         );
-
-        // Additional commands depending on the db driver
-        switch ($this->driver) {
-            case DbConfig::DRIVER_MYSQL:
-                break;
-            case DbConfig::DRIVER_PGSQL:
-                break;
-        }
     }
 
     /**

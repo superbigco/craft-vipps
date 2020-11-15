@@ -65,9 +65,6 @@ class Express extends Component
         if (\is_numeric($purchasable)) {
             $purchasable = Plugin::getInstance()->getVariants()->getVariantById($purchasable);
         }
-        elseif ($purchasable instanceof Purchasable) {
-            $purchasable = $purchasable;
-        }
 
         $class = $config['class'] ?? null;
         $title = $config['title'] ?? '';
