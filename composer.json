@@ -2,7 +2,7 @@
     "name": "superbig/craft-vipps",
     "description": "Integrate Commerce with Vipps",
     "type": "craft-plugin",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "keywords": [
         "craft",
         "cms",
