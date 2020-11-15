@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2018 Superbig
  */
 
-namespace superbig\vipps\assetbundles\vipsexpress;
+namespace superbig\vipps\assetbundles\vippsexpress;
 
 use Craft;
 use craft\web\AssetBundle;
@@ -29,7 +29,7 @@ class VippsExpressAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = "@superbig/vipps/assetbundles/vipps/dist";
+        $this->sourcePath = "@superbig/vipps/assetbundles/vippsexpress/dist";
 
         $this->depends = [
             CpAsset::class,

@@ -17,7 +17,7 @@ use craft\commerce\services\OrderAdjustments;
 use craft\commerce\services\OrderHistories;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\twig\variables\CraftVariable;
-use superbig\vipps\behavior\TransactionBehavior;
+use superbig\vipps\behaviors\TransactionBehavior;
 use superbig\vipps\gateways\Gateway;
 use superbig\vipps\helpers\StringHelper;
 
