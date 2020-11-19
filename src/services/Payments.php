@@ -310,12 +310,11 @@ class Payments extends Component
      */
     public function getSuccessfulTransactionForOrder(Order $order)
     {
-        return collect($order->getTransactions())
-            ->first(function(Transaction $transaction) {
-                return $transaction->status === TransactionRecord::STATUS_SUCCESS
-                    && $transaction->type === TransactionRecord::TYPE_AUTHORIZE
-                    && $transaction->parentId !== null;
-            });
+        return ArrayHelper::firstWhere($order->getTransactions(), function(Transaction $transaction) {
+            return $transaction->status === TransactionRecord::STATUS_SUCCESS
+                && $transaction->type === TransactionRecord::TYPE_AUTHORIZE
+                && $transaction->parentId !== null;
+        });
     }
 
     public function getIsExpress(): bool
