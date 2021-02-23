@@ -283,7 +283,7 @@ class CallbackController extends Controller
                     'shippingMethod' => $method->getName(),
                     'shippingMethodId' => $method->getHandle(),
                 ];
-            }, $order->getAvailableShippingMethods());
+            }, $order->getAvailableShippingMethodOptions());
 
             // Send something back if no shipping is required/no results is returned
             if (empty($methods)) {
