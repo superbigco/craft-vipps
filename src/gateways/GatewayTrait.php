@@ -10,6 +10,7 @@
 
 namespace superbig\vipps\gateways;
 
+use Craft;
 use craft\commerce\base\RequestResponseInterface;
 use craft\commerce\models\payments\OffsitePaymentForm;
 use craft\commerce\models\PaymentSource;
