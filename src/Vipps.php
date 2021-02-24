@@ -88,15 +88,6 @@ class Vipps extends Plugin
         // Install event listeners
         $this->installEventListeners();
 
-        Event::on(
-            Plugins::class,
-            Plugins::EVENT_AFTER_INSTALL_PLUGIN,
-            function(PluginEvent $event) {
-                if ($event->plugin === $this) {
-                }
-            }
-        );
-
         Craft::info(
             Craft::t(
                 'vipps',

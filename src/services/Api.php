@@ -37,9 +37,6 @@ class Api extends Component
     private $_client;
     private $_accessToken;
 
-    // Public Methods
-    // =========================================================================
-
     public function init()
     {
         // Set initial token

@@ -10,17 +10,7 @@
 
 namespace superbig\vipps\helpers;
 
-use craft\helpers\Json;
-use craft\helpers\Template;
-use craft\helpers\UrlHelper;
 use Exception;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\BadResponseException;
-use function GuzzleHttp\Psr7\build_query;
-use superbig\vipps\Vipps;
-
-use Craft;
-use craft\base\Component;
 
 /**
  * @author    Superbig
