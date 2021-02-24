@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Fixed
 - Fixed deprecated shipping methods call
 - Fixed exception when capture was happening on status change and a transaction couldn't be found
+- Fix wrong JSON response when returning from Vipps and a order already was paid
 
 ## 1.0.6 - 2020-11-19
 

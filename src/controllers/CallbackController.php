@@ -71,14 +71,8 @@ class CallbackController extends Controller
         $order = $transaction->getOrder();
 
         if ($order->getIsPaid()) {
-            LogToFile::info("Skipping {$orderId} because order already is paid");
-
-            return $this->asJson([
-                'success' => true,
-            ]);
+            return $this->redirect(Vipps::$plugin->payments->getFallbackUrl($order));
         }
-
-        // @todo Check status here directly from Vipps?
 
         /** @var TransactionBehavior|Transaction $lastTransaction */
         $lastTransaction = $order->getLastTransaction();
