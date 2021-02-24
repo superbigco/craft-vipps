@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## Unreleased
 
+### Added
+- Now sends the `Merchant-Serial-Number` header on all requests by default
+
 ### Fixed
 - Fixed deprecated shipping methods call
 - Fixed exception when capture was happening on status change and a transaction couldn't be found

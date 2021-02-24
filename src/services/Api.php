@@ -217,6 +217,7 @@ class Api extends Component
             'ocp-apim-subscription-key' => Craft::parseEnv($gateway->subscriptionKeyAccessToken),
             'client_id'                 => Craft::parseEnv($gateway->clientId),
             'client_secret'             => Craft::parseEnv($gateway->clientSecret),
+            'Merchant-Serial-Number' => Craft::parseEnv($gateway->merchantSerialNumber),
             'Vipps-System-Name' => 'craft-commerce',
             'Vipps-System-Version' => CommercePlugin::getInstance()->getVersion(),
             'Vipps-System-Plugin-Name' => 'craft-vipps',
