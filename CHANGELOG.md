@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Fix wrong JSON response when returning from Vipps and a order already was paid
 - Fix wrong method being used to complete order on successful payment. This could lead to orders being marked as not paid.
 - Fixed deprecated query builder method
+- Fixed type parity when comparing paid amount and order total ([#43](https://github.com/superbigco/craft-vipps/pull/43))
 
 ## 1.0.6 - 2020-11-19
 
