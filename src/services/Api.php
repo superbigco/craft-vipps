@@ -12,13 +12,10 @@ namespace superbig\vipps\services;
 
 use craft\commerce\Plugin as CommercePlugin;
 use craft\helpers\Json;
-use craft\helpers\Template;
-use craft\helpers\UrlHelper;
-use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Psr7\Query;
 use superbig\vipps\helpers\LogToFile;
-use function GuzzleHttp\Psr7\build_query;
 use superbig\vipps\Vipps;
 
 use Craft;
@@ -84,7 +81,7 @@ class Api extends Component
             $client   = $this->getClient();
             $response = $client->get($url, [
                 'headers' => $this->_getDefaultHeaders(),
-                'query'   => build_query($query),
+                'query'   => Query::build($query),
             ]);
             $body     = (string)$response->getBody();
             $json     = Json::decodeIfJson($body);
