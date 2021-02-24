@@ -205,7 +205,7 @@ class Payments extends Component
             if ($enabled && $gateway->captureStatusUid === $e->orderHistory->getNewStatus()->uid) {
                 $transaction = $this->getSuccessfulTransactionForOrder($order);
 
-                if ($transaction->canCapture()) {
+                if ($transaction && $transaction->canCapture()) {
                     // capture transaction and display result
                     $child = Plugin::getInstance()->getPayments()->captureTransaction($transaction);
 

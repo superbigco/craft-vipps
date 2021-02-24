@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ### Fixed
 - Fixed deprecated shipping methods call
+- Fixed exception when capture was happening on status change and a transaction couldn't be found
 
 ## 1.0.6 - 2020-11-19
 
