@@ -177,7 +177,8 @@ class CallbackController extends Controller
         $childTransaction = Plugin::getInstance()->getTransactions()->createTransaction(null, $transaction);
 
         if ($response->isExpress()) {
-            $amount = $response->getAmount(false) / 100;
+            // Make sure the amount is a float/double for the comparison below
+            $amount = $response->getAmount(false) / 100.0;
 
             // Make sure the amount is correct since it can change on the Vipps side
             // when customer selects shipping method
