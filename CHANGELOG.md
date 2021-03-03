@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## 1.0.7 - 2021-03-03
+
+> {warning} This release fixes a issue with completed orders not being marked as paid, so upgrading is strongly recommended. 
 
 ### Added
 - Now sends the `Merchant-Serial-Number` header on all requests by default
