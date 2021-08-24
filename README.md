@@ -163,13 +163,19 @@ Get our attention on Twitter by using the `#craftcms` hashtag and mentioning [@s
 
 If you have any feedback, comments, questions or suggestion: email us at `contact at superbig.co`.
 
+## Troubleshooting
+
+#### "Invalid auth token received from Vipps" error
+
+If you see this in logs, this typically means that there is a layer between Craft and Vipps that strips away the _Authorization_ header. You should start by checking if your webserver or firewall is removing it.
+
 ## Vipps Roadmap
 
 Some things to do, and ideas for potential features:
 
 - [ ] Handle signup after payment 
 - [ ] Support for user signups via Vipps
-- [ ] Support for subscriptions (once Vipps makes it available)
+- [ ] Support for subscriptions
 - [ ] Better handling of addresses and existing customers
 
 Brought to you by [Superbig](https://superbig.co)
