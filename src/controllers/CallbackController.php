@@ -17,6 +17,7 @@ use craft\commerce\models\ShippingMethod;
 use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
 use craft\commerce\records\Transaction as TransactionRecord;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use superbig\vipps\behaviors\TransactionBehavior;
 use superbig\vipps\helpers\LogToFile;
@@ -139,8 +140,8 @@ class CallbackController extends Controller
             $shippingDetails = $payload['shippingDetails'];
             $addressPayload = $shippingDetails['address'];
             $address = new Address([
-                'firstName' => \data_get($payload, 'userDetails.firstName'),
-                'lastName' => \data_get($payload, 'userDetails.lastName'),
+                'firstName' => ArrayHelper::getValue($payload, 'userDetails.firstName'),
+                'lastName' => ArrayHelper::getValue($payload, 'userDetails.lastName'),
                 'address1' => $addressPayload['addressLine1'] ?? null,
                 'address2' => $addressPayload['addressLine2'] ?? null,
                 'city' => $addressPayload['city'],
