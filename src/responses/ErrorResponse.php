@@ -15,9 +15,6 @@ use craft\helpers\Json;
 use GuzzleHttp\Exception\BadResponseException;
 use superbig\vipps\Vipps;
 
-use Craft;
-use craft\base\Model;
-
 /**
  * @author    Superbig
  * @package   Vipps
@@ -31,10 +28,10 @@ use craft\base\Model;
 class ErrorResponse implements RequestResponseInterface
 {
     protected $exception;
-    private   $orderId     = '';
-    protected $data        = [];
-    private   $_redirect   = '';
-    private   $_processing = false;
+    private $orderId = '';
+    protected $data = [];
+    private $_redirect = '';
+    private $_processing = false;
 
     /**
      * Response constructor.
@@ -44,8 +41,8 @@ class ErrorResponse implements RequestResponseInterface
     public function __construct(BadResponseException $exception, $orderId = '')
     {
         $this->exception = $exception;
-        $this->orderId   = $orderId;
-        $this->data      = $exception->hasResponse() ? Json::decodeIfJson((string)$exception->getResponse()->getBody()) : [];
+        $this->orderId = $orderId;
+        $this->data = $exception->hasResponse() ? Json::decodeIfJson((string)$exception->getResponse()->getBody()) : [];
     }
 
     // Public Properties
@@ -82,17 +79,13 @@ class ErrorResponse implements RequestResponseInterface
         return $this->_processing;
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function isRedirect(): bool
     {
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function getRedirectMethod(): string
     {
         return 'GET';

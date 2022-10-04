@@ -10,17 +10,14 @@
 
 namespace superbig\vipps\services;
 
-use craft\commerce\adjusters\Shipping;
-use craft\commerce\base\Purchasable;
-use craft\commerce\Plugin;
-use craft\events\RegisterComponentTypesEvent;
-use craft\helpers\Template;
-use craft\helpers\UrlHelper;
-use superbig\vipps\models\PaymentRequestModel;
-use superbig\vipps\Vipps;
-
 use Craft;
 use craft\base\Component;
+use craft\commerce\adjusters\Shipping;
+use craft\commerce\Plugin;
+use craft\events\RegisterComponentTypesEvent;
+
+use craft\helpers\UrlHelper;
+use superbig\vipps\Vipps;
 
 /**
  * @author    Superbig
@@ -32,7 +29,7 @@ class Express extends Component
     // Public Methods
     // =========================================================================
 
-    public function onRegisterOrderAdjusters(RegisterComponentTypesEvent $e)
+    public function onRegisterOrderAdjusters(RegisterComponentTypesEvent $e): void
     {
         if (Vipps::$plugin->getPayments()->getIsExpress()) {
             // When Commerce calls `Plugin::getInstance()->getOrderAdjustments()->getAdjusters()`
@@ -48,9 +45,7 @@ class Express extends Component
 
     /**
      * @param null  $purchasable
-     * @param array $config
      *
-     * @return string
      * @throws \Twig\Error\LoaderError
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
@@ -58,7 +53,7 @@ class Express extends Component
      */
     public function getButton($purchasable = null, array $config = []): string
     {
-        $view    = Craft::$app->getView();
+        $view = Craft::$app->getView();
         $oldMode = $view->getTemplateMode();
         $view->setTemplateMode($view::TEMPLATE_MODE_CP);
 
@@ -69,11 +64,11 @@ class Express extends Component
         $class = $config['class'] ?? null;
         $title = $config['title'] ?? '';
 
-        $url  = $this->getCheckoutUrl($purchasable, $config);
+        $url = $this->getCheckoutUrl($purchasable, $config);
         $html = $view->renderTemplate('vipps/_components/express/button', [
-            'url'         => $url,
-            'class'       => $class,
-            'title'       => $title,
+            'url' => $url,
+            'class' => $class,
+            'title' => $title,
             'purchasable' => $purchasable,
         ]);
 
@@ -84,10 +79,10 @@ class Express extends Component
 
     public function getCheckoutUrl($purchasable = null, array $config = []): string
     {
-        $data    = array_filter([
-            'id'      => $purchasable->id ?? null,
-            'qty'     => $config['quantity'] ?? $config['qty'] ?? 1,
-            'note'    => $config['note'] ?? null,
+        $data = array_filter([
+            'id' => $purchasable->id ?? null,
+            'qty' => $config['quantity'] ?? $config['qty'] ?? 1,
+            'note' => $config['note'] ?? null,
             'options' => $config['options'] ?? [],
         ]);
         $payload = [
@@ -105,9 +100,7 @@ class Express extends Component
 
     /**
      * @param null  $purchasable
-     * @param array $config
      *
-     * @return string
      * @throws \Twig\Error\LoaderError
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
@@ -115,24 +108,24 @@ class Express extends Component
      */
     public function getFormButton($purchasable = null, array $config = []): string
     {
-        $view    = Craft::$app->getView();
+        $view = Craft::$app->getView();
         $oldMode = $view->getTemplateMode();
         $view->setTemplateMode($view::TEMPLATE_MODE_CP);
 
-        $data  = array_filter([
-            'id'      => $purchasable->id ?? null,
-            'qty'     => $config['quantity'] ?? $config['qty'] ?? 1,
-            'note'    => $config['note'] ?? null,
+        $data = array_filter([
+            'id' => $purchasable->id ?? null,
+            'qty' => $config['quantity'] ?? $config['qty'] ?? 1,
+            'note' => $config['note'] ?? null,
             'options' => $config['options'] ?? [],
         ]);
         $class = $config['class'] ?? null;
         $title = $config['title'] ?? '';
 
         $html = $view->renderTemplate('vipps/_components/express/form-button', [
-            'class'       => $class,
-            'title'       => $title,
+            'class' => $class,
+            'title' => $title,
             'purchasable' => $purchasable,
-            'config'      => $data,
+            'config' => $data,
         ]);
 
         $view->setTemplateMode($oldMode);

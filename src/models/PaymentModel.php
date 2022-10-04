@@ -10,10 +10,9 @@
 
 namespace superbig\vipps\models;
 
-use superbig\vipps\Vipps;
-
-use Craft;
 use craft\base\Model;
+
+use superbig\vipps\Vipps;
 
 /**
  * @author    Superbig
@@ -43,9 +42,7 @@ class PaymentModel extends Model
     // Public Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
+
     public function rules()
     {
         return [

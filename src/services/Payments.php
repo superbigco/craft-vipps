@@ -10,6 +10,8 @@
 
 namespace superbig\vipps\services;
 
+use Craft;
+use craft\base\Component;
 use craft\commerce\elements\Order;
 use craft\commerce\elements\Variant;
 use craft\commerce\events\OrderStatusEvent;
@@ -19,7 +21,6 @@ use craft\commerce\Plugin;
 use craft\commerce\records\Transaction as TransactionRecord;
 use craft\db\Query;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use superbig\vipps\gateways\Gateway;
 use superbig\vipps\helpers\Currency;
@@ -28,11 +29,9 @@ use superbig\vipps\models\PaymentModel;
 use superbig\vipps\models\PaymentRequestModel;
 use superbig\vipps\records\PaymentRecord;
 use superbig\vipps\responses\CaptureResponse;
+
 use superbig\vipps\responses\PaymentResponse;
 use superbig\vipps\Vipps;
-
-use Craft;
-use craft\base\Component;
 use yii\base\Exception;
 
 /**
@@ -42,21 +41,19 @@ use yii\base\Exception;
  */
 class Payments extends Component
 {
-    private $_express;
+    private ?bool $_express = null;
 
-    /** @var Gateway */
+    /** @var mixed|null */
     private $_gateway;
 
-    public function init()
+    public function init(): void
     {
     }
 
     /**
      * @param string|null $shortId
-     *
-     * @return Order|null
      */
-    public function getOrderByShortId(string $shortId = null)
+    public function getOrderByShortId(string $shortId = null): ?\craft\commerce\elements\Order
     {
         $orderId = (new Query())
             ->from(PaymentRecord::tableName())
@@ -71,7 +68,7 @@ class Payments extends Component
         return Plugin::getInstance()->getOrders()->getOrderById($orderId);
     }
 
-    public function getTransactionByShortId(string $shortId = null)
+    public function getTransactionByShortId(string $shortId = null): ?\craft\commerce\models\Transaction
     {
         $reference = (new Query())
             ->from(PaymentRecord::tableName())
@@ -86,37 +83,33 @@ class Payments extends Component
         return Plugin::getInstance()->getTransactions()->getTransactionByReferenceAndStatus($reference, TransactionRecord::STATUS_REDIRECT);
     }
 
-    public function savePayment(PaymentModel $payment): bool
+    public function savePayment(PaymentModel $payment): int
     {
-        $query = (new Query())
+        return (new Query())
             ->createCommand()
             ->upsert(PaymentRecord::tableName(), [
-                'orderId'              => $payment->orderId,
-                'shortId'              => $payment->shortId,
+                'orderId' => $payment->orderId,
+                'shortId' => $payment->shortId,
                 'transactionReference' => $payment->transactionReference,
             ])
             ->execute();
-
-        return $query;
     }
 
-    public function initiatePayment(PaymentRequestModel $paymentRequest)
+    public function initiatePayment(PaymentRequestModel $paymentRequest): ?array
     {
         // ref https://vippsas.github.io/vipps-ecom-api/#/Vipps_eCom_API/initiatePaymentV3UsingPOST
         $payload = $paymentRequest->getPayload();
 
-        $response = Vipps::$plugin->api->post('/ecomm/v2/payments/', $payload);
-
-        return $response;
+        return Vipps::$plugin->getApi()->post('/ecomm/v2/payments/', $payload);
     }
 
     public function intiatePaymentFromGateway(Transaction $transaction): PaymentResponse
     {
-        $order          = $transaction->getOrder();
+        $order = $transaction->getOrder();
         $paymentRequest = new PaymentRequestModel([
-            'order'       => $order,
+            'order' => $order,
             'transaction' => $transaction,
-            'type'        => PaymentRequestModel::TYPE_REGULAR,
+            'type' => PaymentRequestModel::TYPE_REGULAR,
         ]);
 
         $this->savePayment($paymentRequest->getPaymentRecord());
@@ -125,8 +118,8 @@ class Payments extends Component
             $paymentRequest->setType(PaymentRequestModel::TYPE_EXPRESS);
         }
 
-        $request  = $this->initiatePayment($paymentRequest);
-        $url      = $request['url'] ?? null;
+        $request = $this->initiatePayment($paymentRequest);
+        $url = $request['url'] ?? null;
         $response = new PaymentResponse($request);
 
         if ($url) {
@@ -134,29 +127,25 @@ class Payments extends Component
         }
 
         return $response;
-
     }
 
     /**
-     * @param Transaction $transaction
-     *
-     * @return CaptureResponse
      * @throws Exception
      */
     public function captureFromGateway(Transaction $transaction): CaptureResponse
     {
-        $order                = $transaction->getOrder();
+        $order = $transaction->getOrder();
         $authorizedTransation = $this->getSuccessfulTransactionForOrder($order);
-        $parentTransaction    = $authorizedTransation->getParent();
-        $gateway              = $this->getGateway();
+        $parentTransaction = $authorizedTransation->getParent();
+        $gateway = $this->getGateway();
         //$amount            = (int)$transaction->amount * 100;
-        $amount   = 0;
-        $response = Vipps::$plugin->api->post("/ecomm/v2/payments/{$parentTransaction->reference}/capture", [
+        $amount = 0;
+        $response = Vipps::$plugin->getApi()->post(sprintf('/ecomm/v2/payments/%s/capture', $parentTransaction->reference), [
             'merchantInfo' => [
                 'merchantSerialNumber' => Craft::parseEnv($gateway->merchantSerialNumber),
             ],
-            'transaction'  => [
-                'amount'          => $amount,
+            'transaction' => [
+                'amount' => $amount,
                 // TODO: Set from status message?
                 'transactionText' => $order->getEmail(),
             ],
@@ -166,26 +155,23 @@ class Payments extends Component
     }
 
     /**
-     * @param Transaction $transaction
-     *
-     * @return CaptureResponse
      * @throws Exception
      */
     public function refundFromGateway(Transaction $transaction): CaptureResponse
     {
-        $order                = $transaction->getOrder();
+        $order = $transaction->getOrder();
         $authorizedTransation = $this->getSuccessfulTransactionForOrder($order);
-        $parentTransaction    = $authorizedTransation->getParent();
-        $gateway              = $this->getGateway();
-        $amount               = Currency::roundAndConvertToMinorUnit($transaction->amount);
-        $transactionText      = !empty($transaction->note) ? $transaction->note : $order->getEmail();
+        $parentTransaction = $authorizedTransation->getParent();
+        $gateway = $this->getGateway();
+        $amount = Currency::roundAndConvertToMinorUnit($transaction->amount);
+        $transactionText = empty($transaction->note) ? $order->getEmail() : $transaction->note;
         //dd($parentTransaction->reference, $amount, $transactionText);
-        $response = Vipps::$plugin->api->post("/ecomm/v2/payments/{$parentTransaction->reference}/refund", [
+        $response = Vipps::$plugin->getApi()->post(sprintf('/ecomm/v2/payments/%s/refund', $parentTransaction->reference), [
             'merchantInfo' => [
                 'merchantSerialNumber' => Craft::parseEnv($gateway->merchantSerialNumber),
             ],
-            'transaction'  => [
-                'amount'          => $amount,
+            'transaction' => [
+                'amount' => $amount,
                 // TODO: Set from status message?
                 'transactionText' => $transactionText,
             ],
@@ -195,10 +181,10 @@ class Payments extends Component
         return new CaptureResponse($response);
     }
 
-    public function onStatusChange(OrderStatusEvent $e)
+    public function onStatusChange(OrderStatusEvent $e): void
     {
         try {
-            $order   = $e->order;
+            $order = $e->order;
             $gateway = $this->getGateway();
             $enabled = $gateway && $gateway->captureOnStatusChange && $this->isVippsGateway($order);
 
@@ -209,31 +195,29 @@ class Payments extends Component
                     // capture transaction and display result
                     $child = Plugin::getInstance()->getPayments()->captureTransaction($transaction);
 
-                    $message = $child->message ? ' (' . $child->message . ')' : '';
+                    $message = $child->message !== '' && $child->message !== '0' ? ' (' . $child->message . ')' : '';
 
                     if ($child->status === TransactionRecord::STATUS_SUCCESS) {
                         $child->order->updateOrderPaidInformation();
                         Craft::$app->getSession()->setNotice(Craft::t('commerce', 'Transaction captured successfully: {message}', [
                             'message' => $message,
                         ]));
-                    }
-                    else {
+                    } else {
                         Craft::$app->getSession()->setError(Craft::t('commerce', 'Couldn’t capture transaction: {message}', [
                             'message' => $message,
                         ]));
                     }
-                }
-                else {
+                } else {
                     Craft::$app->getSession()->setError(Craft::t('commerce', 'Couldn’t capture transaction.', ['id' => $transaction->id]));
                 }
             }
-        } catch (\Exception $e) {
-            LogToFile::error('Not able to change status: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
-            Craft::$app->getErrorHandler()->logException($e);
+        } catch (\Exception $exception) {
+            LogToFile::error('Not able to change status: ' . $exception->getMessage() . "\n" . $exception->getTraceAsString());
+            Craft::$app->getErrorHandler()->logException($exception);
         }
     }
 
-    public function createResponseFromCallback($payload = [])
+    public function createResponseFromCallback($payload = []): void
     {
         // https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api.md#callback
     }
@@ -251,49 +235,45 @@ class Payments extends Component
     {
         // @todo Crop?
         $lineItems = $order->getLineItems();
-        $lines     = array_map(function(LineItem $item) {
+        $lines = array_map(static function (LineItem $item) : string {
             $variant = $item->getPurchasable();
-
             /** @var Variant $variant */
-
-            return "{$item->qty}x {$variant->title}";
+            return sprintf('%dx %s', $item->qty, $variant->title);
         }, $lineItems);
 
         return implode("\n", $lines);
     }
 
-    public function getFallbackActionUrl(string $transactionId)
+    public function getFallbackActionUrl(string $transactionId): string
     {
         return UrlHelper::siteUrl('vipps/callbacks/v2/return/' . $transactionId);
     }
 
     public function getFallbackUrl(Order $order): string
     {
-        $gateway    = $this->getGateway();
-        $url        = Craft::parseEnv($gateway->fallbackUrl);
-        $parsedUrl  = Craft::$app->getView()->renderObjectTemplate($url, $order);
+        $gateway = $this->getGateway();
+        $url = Craft::parseEnv($gateway->fallbackUrl);
+        $parsedUrl = Craft::$app->getView()->renderObjectTemplate($url, $order);
         $defaultUrl = UrlHelper::siteUrl('/');
 
-        return !empty($parsedUrl) ? $parsedUrl : $defaultUrl;
+        return empty($parsedUrl) ? $defaultUrl : $parsedUrl;
     }
 
     public function getFallbackErrorUrl(Order $order): string
     {
-        $gateway    = $this->getGateway();
-        $url        = Craft::parseEnv($gateway->errorFallbackUrl);
-        $parsedUrl  = Craft::$app->getView()->renderObjectTemplate($url, $order);
+        $gateway = $this->getGateway();
+        $url = Craft::parseEnv($gateway->errorFallbackUrl);
+        $parsedUrl = Craft::$app->getView()->renderObjectTemplate($url, $order);
         $defaultUrl = $this->getFallbackUrl($order);
 
-        return !empty($parsedUrl) ? $parsedUrl : $defaultUrl;
+        return empty($parsedUrl) ? $defaultUrl : $parsedUrl;
     }
 
     public function getGateway(): Gateway
     {
         if (!$this->_gateway) {
             $gateways = Plugin::getInstance()->getGateways()->getAllCustomerEnabledGateways();
-            $this->_gateway = ArrayHelper::firstWhere($gateways, function($gateway) {
-                return $gateway instanceof Gateway;
-            });
+            $this->_gateway = ArrayHelper::firstWhere($gateways, static fn($gateway): bool => $gateway instanceof Gateway);
 
             if (!$this->_gateway) {
                 throw new Exception('The Vipps gateway is not setup correctly.');
@@ -303,18 +283,11 @@ class Payments extends Component
         return $this->_gateway;
     }
 
-    /**
-     * @param Order $order
-     *
-     * @return Transaction|null
-     */
-    public function getSuccessfulTransactionForOrder(Order $order)
+    public function getSuccessfulTransactionForOrder(Order $order): ?\craft\commerce\models\Transaction
     {
-        return ArrayHelper::firstWhere($order->getTransactions(), function(Transaction $transaction) {
-            return $transaction->status === TransactionRecord::STATUS_SUCCESS
-                && $transaction->type === TransactionRecord::TYPE_AUTHORIZE
-                && $transaction->parentId !== null;
-        });
+        return ArrayHelper::firstWhere($order->getTransactions(), static fn(Transaction $transaction): bool => $transaction->status === TransactionRecord::STATUS_SUCCESS
+            && $transaction->type === TransactionRecord::TYPE_AUTHORIZE
+            && $transaction->parentId !== null);
     }
 
     public function getIsExpress(): bool
@@ -322,16 +295,15 @@ class Payments extends Component
         return (bool)$this->_express;
     }
 
-    public function setIsExpress(bool $value = true)
+    public function setIsExpress(bool $value = true): static
     {
         $this->_express = $value;
 
         return $this;
     }
 
-    public function getOrderDetails(Order $order)
+    public function getOrderDetails(Order $order): void
     {
-
     }
 
     public function isVippsGateway(Order $order): bool

@@ -10,6 +10,7 @@
 
 namespace superbig\vipps\gateways;
 
+use Craft;
 use craft\commerce\base\Gateway as BaseGateway;
 use craft\commerce\base\RequestResponseInterface;
 use craft\commerce\models\OrderStatus;
@@ -17,10 +18,8 @@ use craft\commerce\models\payments\BasePaymentForm;
 use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
 use craft\helpers\StringHelper;
-use superbig\vipps\Vipps;
 
-use Craft;
-use craft\base\Model;
+use superbig\vipps\Vipps;
 
 /**
  * @author    Superbig
@@ -34,28 +33,26 @@ class Gateway extends BaseGateway
     // Public Properties
     // =========================================================================
 
-    public $clientId                          = '';
-    public $clientSecret                      = '';
-    public $subscriptionKeyAccessToken        = '';
-    public $subscriptionKeyEcommerce          = '';
-    public $merchantSerialNumber              = '';
-    public $transactionText                   = '';
-    public $testMode                          = false;
-    public $expressCheckout                   = true;
-    public $createUserOnExpressCheckout       = true;
-    public $loginWithVipps                    = false;
-    public $addItemToCartIfAlreadyExists      = false;
-    public $newCartOnExpressCheckout          = true;
-    public $fallbackUrl                       = '';
-    public $errorFallbackUrl                  = '';
-    public $authToken                         = '';
-    public $captureOnStatusChange             = false;
-    public $captureStatusUid                  = '';
+    public $clientId = '';
+    public $clientSecret = '';
+    public $subscriptionKeyAccessToken = '';
+    public $subscriptionKeyEcommerce = '';
+    public $merchantSerialNumber = '';
+    public $transactionText = '';
+    public $testMode = false;
+    public $expressCheckout = true;
+    public $createUserOnExpressCheckout = true;
+    public $loginWithVipps = false;
+    public $addItemToCartIfAlreadyExists = false;
+    public $newCartOnExpressCheckout = true;
+    public $fallbackUrl = '';
+    public $errorFallbackUrl = '';
+    public $authToken = '';
+    public $captureOnStatusChange = false;
+    public $captureStatusUid = '';
     public $useBillingPhoneAsVippsPhoneNumber = true;
 
-    /**
-     * @inheritdoc
-     */
+
     public static function displayName(): string
     {
         return Craft::t('vipps', 'Vipps');
@@ -141,15 +138,13 @@ class Gateway extends BaseGateway
         return !empty($this->authToken) ? $this->authToken : StringHelper::UUID();
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('vipps/gatewaySettings', [
-            'gateway'   => $this,
+            'gateway' => $this,
             'authToken' => $this->getAuthToken(),
-            'statuses'  => $this->getOrderStatuses(),
+            'statuses' => $this->getOrderStatuses(),
         ]);
     }
 

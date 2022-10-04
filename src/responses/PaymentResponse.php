@@ -10,11 +10,10 @@
 
 namespace superbig\vipps\responses;
 
-use craft\commerce\base\RequestResponseInterface;
-use superbig\vipps\Vipps;
-
 use Craft;
-use craft\base\Model;
+use craft\commerce\base\RequestResponseInterface;
+
+use superbig\vipps\Vipps;
 
 /**
  * @author    Superbig
@@ -48,7 +47,7 @@ class PaymentResponse implements RequestResponseInterface
     {
         $this->data = $data;
         $statusCode = $this->data['statusCode'] ?? null;
-        $message    = $this->data['message'] ?? null;
+        $message = $this->data['message'] ?? null;
 
         if ($statusCode) {
             $this->_code = $statusCode;
@@ -101,17 +100,13 @@ class PaymentResponse implements RequestResponseInterface
         return $this->_processing;
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function isRedirect(): bool
     {
         return !empty($this->_redirect);
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function getRedirectMethod(): string
     {
         return 'GET';

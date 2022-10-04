@@ -29,8 +29,8 @@ trait Services
     {
         $this->setComponents([
             'payments' => Payments::class,
-            'express'  => Express::class,
-            'api'      => Api::class,
+            'express' => Express::class,
+            'api' => Api::class,
         ]);
     }
 

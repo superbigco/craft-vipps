@@ -10,10 +10,9 @@
 
 namespace superbig\vipps\models;
 
-use superbig\vipps\Vipps;
-
-use Craft;
 use craft\base\Model;
+
+use superbig\vipps\Vipps;
 
 /**
  * @author    Superbig
@@ -28,25 +27,23 @@ class Settings extends Model
     /**
      * @var string
      */
-    public $clientId                     = '';
-    public $clientSecret                 = '';
-    public $subscriptionKeyAccessToken   = '';
-    public $subscriptionKeyEcommerce     = '';
-    public $merchantSerialNumber         = '';
-    public $transactionText              = '';
-    public $testMode                     = false;
-    public $expressCheckout              = true;
-    public $createUserOnExpressCheckout  = true;
-    public $loginWithVipps               = false;
+    public $clientId = '';
+    public $clientSecret = '';
+    public $subscriptionKeyAccessToken = '';
+    public $subscriptionKeyEcommerce = '';
+    public $merchantSerialNumber = '';
+    public $transactionText = '';
+    public $testMode = false;
+    public $expressCheckout = true;
+    public $createUserOnExpressCheckout = true;
+    public $loginWithVipps = false;
     public $addItemToCartIfAlreadyExists = false;
-    public $newCartOnExpressCheckout     = true;
+    public $newCartOnExpressCheckout = true;
 
     // Public Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
+
     public function rules()
     {
         return [

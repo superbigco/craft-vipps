@@ -13,9 +13,6 @@ namespace superbig\vipps\responses;
 use craft\commerce\base\RequestResponseInterface;
 use superbig\vipps\Vipps;
 
-use Craft;
-use craft\base\Model;
-
 /**
  * @author    Superbig
  * @package   Vipps
@@ -80,17 +77,13 @@ class CaptureResponse implements RequestResponseInterface
         return $this->_processing;
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function isRedirect(): bool
     {
         return !empty($this->_redirect);
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function getRedirectMethod(): string
     {
         return 'GET';

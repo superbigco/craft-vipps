@@ -10,10 +10,9 @@
 
 namespace superbig\vipps\models;
 
-use superbig\vipps\Vipps;
-
-use Craft;
 use craft\base\Model;
+
+use superbig\vipps\Vipps;
 
 /**
  * @author    Superbig
@@ -52,7 +51,7 @@ class ErrorModel extends Model
     {
         $groups = [
             'Authentication' => 'Authentication', // Authentication Failure because of wrong token provided
-            'Payment'        => 'Payment', // Failure while doing a payment Authorization, mostly because of PSP errors
+            'Payment' => 'Payment', // Failure while doing a payment Authorization, mostly because of PSP errors
             'InvalidRequest' => 'InvalidRequest', // Request contains invalid parameters
             'VippsError' => 'VippsError', // Internal Vipps application error
             'Customer' => 'Customer', // Error raised because of Vipps user (Example: User not registered with Vipps ....
@@ -60,9 +59,7 @@ class ErrorModel extends Model
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function rules()
     {
         return [

@@ -10,17 +10,16 @@
 
 namespace superbig\vipps\models;
 
+use Craft;
+use craft\base\Model;
 use craft\commerce\elements\Order;
 use craft\commerce\models\Settings;
 use craft\commerce\models\Transaction;
 use craft\helpers\UrlHelper;
 use DateTime;
-use superbig\vipps\helpers\LogToFile;
+
 use superbig\vipps\helpers\StringHelper;
 use superbig\vipps\Vipps;
-
-use Craft;
-use craft\base\Model;
 
 /**
  * @author    Superbig
@@ -46,12 +45,12 @@ class PaymentRequestModel extends Model
         self::TYPE_REGULAR => 'eComm Regular Payment',
     ];
 
-    public  $mobileNumber = '';
-    public  $type         = self::TYPE_EXPRESS;
-    public  $amount;
-    public  $orderId;
-    public  $order;
-    public  $transaction;
+    public $mobileNumber = '';
+    public $type = self::TYPE_EXPRESS;
+    public $amount;
+    public $orderId;
+    public $order;
+    public $transaction;
     private $transactionShortId;
     private $_transactionText;
     private $_url;
@@ -70,42 +69,42 @@ class PaymentRequestModel extends Model
     {
         // Settings
         $callbackPrefix = UrlHelper::siteUrl('vipps/callbacks');
-        $timestamp      = (new \DateTime())->format(DateTime::ATOM);
+        $timestamp = (new \DateTime())->format(DateTime::ATOM);
 
         // Order info
-        $orderId        = $this->order->id;
-        $fallbackUrl    = Vipps::$plugin->getPayments()->getFallbackActionUrl($this->getTransactionShortId());
+        $orderId = $this->order->id;
+        $fallbackUrl = Vipps::$plugin->getPayments()->getFallbackActionUrl($this->getTransactionShortId());
         $billingAddress = $this->order->getBillingAddress();
-        $phoneNumber    = !empty($billingAddress->phone) ? $billingAddress->phone : '48059154';
-        $gateway        = Vipps::$plugin->getPayments()->getGateway();
+        $phoneNumber = !empty($billingAddress->phone) ? $billingAddress->phone : '48059154';
+        $gateway = Vipps::$plugin->getPayments()->getGateway();
         $billingAddress = $this->order->getBillingAddress();
 
         // Getting amount
         // Note: We have to convert it to int in this sequence because Order::getTotalPrice() returns it as double
         // which might have unseen decimals which leads to weird results like 1259,09 when everywhere else its 1259,10
         // @todo Should check if price is set to Settings::MINIMUM_TOTAL_PRICE_STRATEGY_SHIPPING
-        $orderTotal          = $this->order->getTotalPrice();
+        $orderTotal = $this->order->getTotalPrice();
         $orderTotalMinorUnit = intval(round(floatval("{$orderTotal}") * 100, 2));
-        $payload             = [
+        $payload = [
             'customerInfo' => [
                 'mobileNumber' => '',
             ],
             'merchantInfo' =>
                 [
-                    'authToken'             => $gateway->getAuthToken(),
-                    'callbackPrefix'        => $callbackPrefix,
+                    'authToken' => $gateway->getAuthToken(),
+                    'callbackPrefix' => $callbackPrefix,
                     'shippingDetailsPrefix' => $callbackPrefix,
-                    'consentRemovalPrefix'  => $callbackPrefix,
-                    'fallBack'              => $fallbackUrl,
-                    'isApp'                 => false,
-                    'merchantSerialNumber'  => Craft::parseEnv($gateway->merchantSerialNumber),
-                    'paymentType'           => $this->getType(),
+                    'consentRemovalPrefix' => $callbackPrefix,
+                    'fallBack' => $fallbackUrl,
+                    'isApp' => false,
+                    'merchantSerialNumber' => Craft::parseEnv($gateway->merchantSerialNumber),
+                    'paymentType' => $this->getType(),
                 ],
-            'transaction'  =>
+            'transaction' =>
                 [
-                    'amount'          => $orderTotalMinorUnit, // In øre
-                    'orderId'         => $this->getTransactionShortId(),
-                    'timeStamp'       => $timestamp,
+                    'amount' => $orderTotalMinorUnit, // In øre
+                    'orderId' => $this->getTransactionShortId(),
+                    'timeStamp' => $timestamp,
                     'transactionText' => $this->getTransactionText(),
                 ],
         ];
@@ -137,8 +136,8 @@ class PaymentRequestModel extends Model
     public function getPaymentRecord(): PaymentModel
     {
         return new PaymentModel([
-            'shortId'              => $this->getTransactionShortId(),
-            'orderId'              => $this->order->id,
+            'shortId' => $this->getTransactionShortId(),
+            'orderId' => $this->order->id,
             'transactionReference' => $this->getTransactionShortId(),
         ]);
     }
@@ -167,9 +166,7 @@ class PaymentRequestModel extends Model
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function rules()
     {
         return [

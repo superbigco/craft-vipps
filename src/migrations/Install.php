@@ -10,12 +10,11 @@
 
 namespace superbig\vipps\migrations;
 
+use Craft;
+use craft\db\Migration;
+
 use superbig\vipps\records\PaymentRecord;
 use superbig\vipps\Vipps;
-
-use Craft;
-use craft\config\DbConfig;
-use craft\db\Migration;
 
 /**
  * @author    Superbig
@@ -35,9 +34,7 @@ class Install extends Migration
     // Public Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
+
     public function safeUp()
     {
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
@@ -52,9 +49,7 @@ class Install extends Migration
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function safeDown()
     {
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
@@ -79,13 +74,13 @@ class Install extends Migration
             $this->createTable(
                 PaymentRecord::tableName(),
                 [
-                    'id'                   => $this->primaryKey(),
-                    'orderId'              => $this->integer()->notNull(),
+                    'id' => $this->primaryKey(),
+                    'orderId' => $this->integer()->notNull(),
                     'transactionReference' => $this->string(255)->notNull()->defaultValue(''),
-                    'shortId'              => $this->string(255)->notNull()->defaultValue(''),
-                    'dateCreated'          => $this->dateTime()->notNull(),
-                    'dateUpdated'          => $this->dateTime()->notNull(),
-                    'uid'                  => $this->uid(),
+                    'shortId' => $this->string(255)->notNull()->defaultValue(''),
+                    'dateCreated' => $this->dateTime()->notNull(),
+                    'dateUpdated' => $this->dateTime()->notNull(),
+                    'uid' => $this->uid(),
                 ]
             );
         }

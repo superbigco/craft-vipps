@@ -10,7 +10,6 @@
 
 namespace superbig\vipps\assetbundles\vippsutilityutility;
 
-use Craft;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 
@@ -24,9 +23,7 @@ class VippsUtilityUtilityAsset extends AssetBundle
     // Public Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
+
     public function init()
     {
         $this->sourcePath = "@superbig/vipps/assetbundles/vippsutilityutility/dist";

@@ -10,15 +10,14 @@
 
 namespace superbig\vipps\controllers;
 
+use Craft;
 use craft\commerce\errors\PaymentException;
 use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
-use superbig\vipps\helpers\LogToFile;
-use superbig\vipps\models\PaymentRequestModel;
-use superbig\vipps\Vipps;
-
-use Craft;
 use craft\web\Controller;
+
+use superbig\vipps\helpers\LogToFile;
+use superbig\vipps\Vipps;
 
 /**
  * @author    Superbig
@@ -27,7 +26,6 @@ use craft\web\Controller;
  */
 class ExpressController extends Controller
 {
-
     // Protected Properties
     // =========================================================================
 
@@ -52,16 +50,16 @@ class ExpressController extends Controller
      */
     public function actionCheckout()
     {
-        $request       = Craft::$app->getRequest();
-        $commerce      = Plugin::getInstance();
-        $cartService   = $commerce->getCarts();
-        $order         = $cartService->getCart(true);
-        $lineItems     = $order->getLineItems();
+        $request = Craft::$app->getRequest();
+        $commerce = Plugin::getInstance();
+        $cartService = $commerce->getCarts();
+        $order = $cartService->getCart(true);
+        $lineItems = $order->getLineItems();
         $vippsPayments = Vipps::$plugin->getPayments();
-        $gateway       = $vippsPayments->getGateway();
-        $paymentForm   = $gateway->getPaymentFormModel();
-        $session       = Craft::$app->getSession();
-        $customError   = '';
+        $gateway = $vippsPayments->getGateway();
+        $paymentForm = $gateway->getPaymentFormModel();
+        $session = Craft::$app->getSession();
+        $customError = '';
 
         $vippsPayments->setIsExpress();
 
@@ -77,9 +75,9 @@ class ExpressController extends Controller
 
             foreach ($purchasables as $key => $purchasable) {
                 $purchasableId = $request->getRequiredParam("purchasables.{$key}.id");
-                $note          = $request->getParam("purchasables.{$key}.note", '');
-                $options       = $request->getParam("purchasables.{$key}.options") ?: [];
-                $qty           = (int)$request->getParam("purchasables.{$key}.qty", 1);
+                $note = $request->getParam("purchasables.{$key}.note", '');
+                $options = $request->getParam("purchasables.{$key}.options") ?: [];
+                $qty = (int)$request->getParam("purchasables.{$key}.qty", 1);
 
                 // Ignore zero value qty for multi-add forms https://github.com/craftcms/commerce/issues/330#issuecomment-384533139
                 if ($qty > 0) {
@@ -88,8 +86,7 @@ class ExpressController extends Controller
                     // New line items already have a qty of one.
                     if ($lineItem->id) {
                         $lineItem->qty += $qty;
-                    }
-                    else {
+                    } else {
                         $lineItem->qty = $qty;
                     }
 
@@ -102,8 +99,8 @@ class ExpressController extends Controller
         $order->shippingMethodHandle = null;
         $order->recalculate();
 
-        $originalTotalPrice       = $order->getOutstandingBalance();
-        $originalTotalQty         = $order->getTotalQty();
+        $originalTotalPrice = $order->getOutstandingBalance();
+        $originalTotalQty = $order->getTotalQty();
         $originalTotalAdjustments = \count($order->getAdjustments());
 
         // Do one final save to confirm the price does not change out from under the customer. Also removes any out of stock items etc.
@@ -112,8 +109,8 @@ class ExpressController extends Controller
 
         // Save the orders new values.
         if (Craft::$app->getElements()->saveElement($order)) {
-            $totalPriceChanged       = $originalTotalPrice !== $order->getOutstandingBalance();
-            $totalQtyChanged         = $originalTotalQty !== $order->getTotalQty();
+            $totalPriceChanged = $originalTotalPrice !== $order->getOutstandingBalance();
+            $totalQtyChanged = $originalTotalQty !== $order->getTotalQty();
             $totalAdjustmentsChanged = $originalTotalAdjustments !== \count($order->getAdjustments());
 
             // Has the order changed in a significant way?
@@ -145,7 +142,7 @@ class ExpressController extends Controller
             }
         }
 
-        $redirect    = '';
+        $redirect = '';
         $transaction = null;
 
         if (!$paymentForm->hasErrors() && !$order->hasErrors()) {
@@ -154,16 +151,15 @@ class ExpressController extends Controller
                 $success = true;
             } catch (PaymentException $exception) {
                 $customError = $exception->getMessage();
-                $success     = false;
-                $method      = __METHOD__;
-                $error       = "{$customError} @ {$method}";
+                $success = false;
+                $method = __METHOD__;
+                $error = "{$customError} @ {$method}";
 
                 LogToFile::error($error);
             }
-        }
-        else {
+        } else {
             $customError = Craft::t('commerce', 'Invalid payment or order. Please review.');
-            $success     = false;
+            $success = false;
 
             LogToFile::error('Invalid payment or order. Please review.');
         }

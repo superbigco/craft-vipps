@@ -10,10 +10,9 @@
 
 namespace superbig\vipps\records;
 
-use superbig\vipps\Vipps;
-
-use Craft;
 use craft\db\ActiveRecord;
+
+use superbig\vipps\Vipps;
 
 /**
  * @author    Superbig
@@ -25,9 +24,7 @@ class PaymentRecord extends ActiveRecord
     // Public Static Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
+
     public static function tableName()
     {
         return '{{%vipps_payments}}';

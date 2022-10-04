@@ -10,6 +10,7 @@
 
 namespace superbig\vipps\controllers;
 
+use Craft;
 use craft\commerce\base\RequestResponseInterface;
 use craft\commerce\errors\TransactionException;
 use craft\commerce\models\Address;
@@ -19,13 +20,12 @@ use craft\commerce\Plugin;
 use craft\commerce\records\Transaction as TransactionRecord;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
+use craft\web\Controller;
 use superbig\vipps\behaviors\TransactionBehavior;
 use superbig\vipps\helpers\LogToFile;
+
 use superbig\vipps\responses\CallbackResponse;
 use superbig\vipps\Vipps;
-
-use Craft;
-use craft\web\Controller;
 use yii\base\Action;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -189,8 +189,7 @@ class CallbackController extends Controller
 
                     $childTransaction->amount = $orderTotal;
                     $childTransaction->paymentAmount = $orderTotal;
-                }
-                else {
+                } else {
                     $childTransaction->amount = $amount;
                     $childTransaction->paymentAmount = $amount;
                 }
@@ -430,14 +429,11 @@ class CallbackController extends Controller
     {
         if ($response->isRedirect()) {
             $transaction->status = TransactionRecord::STATUS_REDIRECT;
-        }
-        elseif ($response->isSuccessful()) {
+        } elseif ($response->isSuccessful()) {
             $transaction->status = TransactionRecord::STATUS_SUCCESS;
-        }
-        elseif ($response->isProcessing()) {
+        } elseif ($response->isProcessing()) {
             $transaction->status = TransactionRecord::STATUS_PROCESSING;
-        }
-        else {
+        } else {
             $transaction->status = TransactionRecord::STATUS_FAILED;
         }
 

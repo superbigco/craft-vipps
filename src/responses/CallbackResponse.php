@@ -12,12 +12,7 @@ namespace superbig\vipps\responses;
 
 use craft\commerce\base\RequestResponseInterface;
 use craft\helpers\ArrayHelper;
-use superbig\vipps\helpers\Currency;
-use superbig\vipps\helpers\LogToFile;
 use superbig\vipps\Vipps;
-
-use Craft;
-use craft\base\Model;
 
 /**
  * @author    Superbig
@@ -26,13 +21,13 @@ use craft\base\Model;
  */
 class CallbackResponse implements RequestResponseInterface
 {
-    const STATUS_SALE           = 'SALE';
-    const STATUS_RESERVE        = 'RESERVE';
-    const STATUS_RESERVED       = 'RESERVED';
+    const STATUS_SALE = 'SALE';
+    const STATUS_RESERVE = 'RESERVE';
+    const STATUS_RESERVED = 'RESERVED';
     const STATUS_RESERVE_FAILED = 'RESERVE_FAILED';
-    const STATUS_SALE_FAILED    = 'SALE_FAILED';
-    const STATUS_CANCELLED      = 'CANCELLED';
-    const STATUS_REJECTED       = 'REJECTED';
+    const STATUS_SALE_FAILED = 'SALE_FAILED';
+    const STATUS_CANCELLED = 'CANCELLED';
+    const STATUS_REJECTED = 'REJECTED';
 
     /**
      * @var
@@ -79,7 +74,7 @@ class CallbackResponse implements RequestResponseInterface
      */
     public function isSuccessful(): bool
     {
-        $error  = ArrayHelper::getValue($this->data, 'errorInfo') || ArrayHelper::getValue($this->data, 'callbackErrorInfo');
+        $error = ArrayHelper::getValue($this->data, 'errorInfo') || ArrayHelper::getValue($this->data, 'callbackErrorInfo');
         $status = ArrayHelper::getValue($this->data, 'transactionInfo.status');
 
         return !$error &&
@@ -100,9 +95,7 @@ class CallbackResponse implements RequestResponseInterface
         return $this->_processing;
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function isRedirect(): bool
     {
         return !empty($this->_redirect);
@@ -118,9 +111,7 @@ class CallbackResponse implements RequestResponseInterface
         return isset($this->data['userDetails']) && isset($this->data['shippingDetails']);
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function getRedirectMethod(): string
     {
         return 'GET';

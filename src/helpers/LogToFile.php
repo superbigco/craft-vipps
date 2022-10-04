@@ -19,12 +19,12 @@ class LogToFile
      * @see https://www.yiiframework.com/doc/api/2.0/yii-log-logger#constants
      */
     const MESSAGE_LEVELS = [
-        'error'        => Logger::LEVEL_ERROR,
-        'info'         => Logger::LEVEL_INFO,
-        'trace'        => Logger::LEVEL_TRACE,
-        'profile'      => Logger::LEVEL_PROFILE,
+        'error' => Logger::LEVEL_ERROR,
+        'info' => Logger::LEVEL_INFO,
+        'trace' => Logger::LEVEL_TRACE,
+        'profile' => Logger::LEVEL_PROFILE,
         'profileBegin' => Logger::LEVEL_PROFILE_BEGIN,
-        'profileEnd'   => Logger::LEVEL_PROFILE_END,
+        'profileEnd' => Logger::LEVEL_PROFILE_END,
     ];
 
     // Static Properties
@@ -77,7 +77,7 @@ class LogToFile
      */
     public static function log($message, string $handle = null, string $level = 'info')
     {
-        $ip     = '';
+        $ip = '';
         $userId = '';
 
         // Default to class value if none provided
@@ -149,8 +149,7 @@ class LogToFile
     {
         if (is_array($message)) {
             $message = Json::encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        }
-        else {
+        } else {
             $message = Craft::t('vipps', $message, $variables);
         }
 
