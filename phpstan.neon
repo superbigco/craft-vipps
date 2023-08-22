@@ -8,7 +8,7 @@ parameters:
         # This file must be added to the project root:
         # https://github.com/craftcms/cms/blob/develop/lib/craft/behaviors/CustomFieldBehavior.php
         - %currentWorkingDirectory%/lib/craft/behaviors/CustomFieldBehavior.php
-    bootstrapFiles:
-        - %currentWorkingDirectory%/bootstrap.php
+#    bootstrapFiles:
+#        - %currentWorkingDirectory%/bootstrap.php
     ignoreErrors:
         - '#Call to an undefined method yii\\web\\UrlManager::setRouteParams\(\)#'
