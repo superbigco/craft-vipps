@@ -20,6 +20,7 @@ use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
 use craft\commerce\records\Transaction as TransactionRecord;
 use craft\db\Query;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use superbig\vipps\gateways\Gateway;
@@ -44,7 +45,7 @@ class Payments extends Component
     private ?bool $_express = null;
 
     /** @var mixed|null */
-    private $_gateway;
+    private mixed $_gateway = null;
 
     public function init(): void
     {
@@ -53,7 +54,7 @@ class Payments extends Component
     /**
      * @param string|null $shortId
      */
-    public function getOrderByShortId(string $shortId = null): ?\craft\commerce\elements\Order
+    public function getOrderByShortId(string $shortId = null): ?Order
     {
         $orderId = (new Query())
             ->from(PaymentRecord::tableName())
@@ -68,11 +69,11 @@ class Payments extends Component
         return Plugin::getInstance()->getOrders()->getOrderById($orderId);
     }
 
-    public function getTransactionByShortId(string $shortId = null): ?\craft\commerce\models\Transaction
+    public function getTransactionByShortId(string $shortId = null): ?Transaction
     {
         $reference = (new Query())
             ->from(PaymentRecord::tableName())
-            ->select('transactionReference')
+            ->select('shortId')
             ->where('shortId = :shortId', [':shortId' => $shortId])
             ->scalar();
 
@@ -142,7 +143,7 @@ class Payments extends Component
         $amount = 0;
         $response = Vipps::$plugin->getApi()->post(sprintf('/ecomm/v2/payments/%s/capture', $parentTransaction->reference), [
             'merchantInfo' => [
-                'merchantSerialNumber' => Craft::parseEnv($gateway->merchantSerialNumber),
+                'merchantSerialNumber' => App::parseEnv($gateway->merchantSerialNumber),
             ],
             'transaction' => [
                 'amount' => $amount,
@@ -168,7 +169,7 @@ class Payments extends Component
         //dd($parentTransaction->reference, $amount, $transactionText);
         $response = Vipps::$plugin->getApi()->post(sprintf('/ecomm/v2/payments/%s/refund', $parentTransaction->reference), [
             'merchantInfo' => [
-                'merchantSerialNumber' => Craft::parseEnv($gateway->merchantSerialNumber),
+                'merchantSerialNumber' => App::parseEnv($gateway->merchantSerialNumber),
             ],
             'transaction' => [
                 'amount' => $amount,
@@ -186,7 +187,7 @@ class Payments extends Component
         try {
             $order = $e->order;
             $gateway = $this->getGateway();
-            $enabled = $gateway && $gateway->captureOnStatusChange && $this->isVippsGateway($order);
+            $enabled = $gateway->captureOnStatusChange && $this->isVippsGateway($order);
 
             if ($enabled && $gateway->captureStatusUid === $e->orderHistory->getNewStatus()->uid) {
                 $transaction = $this->getSuccessfulTransactionForOrder($order);
@@ -224,7 +225,8 @@ class Payments extends Component
 
     public function getTransactionText(Order $order): string
     {
-        $text = Craft::parseEnv($this->getGateway()->transactionText);
+        $text = empty($this->getGateway()->transactionText) ? '{lineItemsText}' : $this->getGateway()->transactionText;
+        $text = App::parseEnv($text);
 
         return Craft::$app->getView()->renderObjectTemplate($text, $order, [
             'lineItemsText' => $this->getLineItemsAsText($order),
@@ -235,7 +237,7 @@ class Payments extends Component
     {
         // @todo Crop?
         $lineItems = $order->getLineItems();
-        $lines = array_map(static function (LineItem $item) : string {
+        $lines = array_map(static function (LineItem $item): string {
             $variant = $item->getPurchasable();
             /** @var Variant $variant */
             return sprintf('%dx %s', $item->qty, $variant->title);
@@ -252,7 +254,7 @@ class Payments extends Component
     public function getFallbackUrl(Order $order): string
     {
         $gateway = $this->getGateway();
-        $url = Craft::parseEnv($gateway->fallbackUrl);
+        $url = App::parseEnv($gateway->fallbackUrl);
         $parsedUrl = Craft::$app->getView()->renderObjectTemplate($url, $order);
         $defaultUrl = UrlHelper::siteUrl('/');
 
@@ -262,7 +264,7 @@ class Payments extends Component
     public function getFallbackErrorUrl(Order $order): string
     {
         $gateway = $this->getGateway();
-        $url = Craft::parseEnv($gateway->errorFallbackUrl);
+        $url = App::parseEnv($gateway->errorFallbackUrl);
         $parsedUrl = Craft::$app->getView()->renderObjectTemplate($url, $order);
         $defaultUrl = $this->getFallbackUrl($order);
 
@@ -283,7 +285,7 @@ class Payments extends Component
         return $this->_gateway;
     }
 
-    public function getSuccessfulTransactionForOrder(Order $order): ?\craft\commerce\models\Transaction
+    public function getSuccessfulTransactionForOrder(Order $order): ?Transaction
     {
         return ArrayHelper::firstWhere($order->getTransactions(), static fn(Transaction $transaction): bool => $transaction->status === TransactionRecord::STATUS_SUCCESS
             && $transaction->type === TransactionRecord::TYPE_AUTHORIZE
@@ -308,8 +310,6 @@ class Payments extends Component
 
     public function isVippsGateway(Order $order): bool
     {
-        $orderGateway = $order->getGateway();
-
-        return $orderGateway !== null && $orderGateway instanceof Gateway;
+        return $order->getGateway() instanceof Gateway;
     }
 }

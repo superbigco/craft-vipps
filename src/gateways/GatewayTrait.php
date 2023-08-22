@@ -17,6 +17,7 @@ use craft\commerce\models\payments\OffsitePaymentForm;
 use craft\commerce\models\PaymentSource;
 use craft\commerce\models\Transaction;
 use craft\web\Response as WebResponse;
+use Throwable;
 use yii\base\NotSupportedException;
 
 /**
@@ -27,13 +28,38 @@ use yii\base\NotSupportedException;
 trait GatewayTrait
 {
     /**
+     * Complete the purchase for offsite payments.
+     *
+     * @param Transaction $transaction The transaction
+     *
+     * @return RequestResponseInterface
+     */
+    public function completePurchase(Transaction $transaction): RequestResponseInterface
+    {
+        // TODO: Implement completePurchase() method.
+    }
+
+    /**
+     * Makes a purchase request.
+     *
+     * @param Transaction     $transaction The purchase transaction
+     * @param BasePaymentForm $form        A form filled with payment info
+     *
+     * @return RequestResponseInterface
+     */
+    public function purchase(Transaction $transaction, BasePaymentForm $form): RequestResponseInterface
+    {
+        // TODO: Implement purchase() method.
+    }
+
+    /**
      * Returns payment Form HTML
      *
      * @param array $params
      *
      * @return string|null
      */
-    public function getPaymentFormHtml(array $params)
+    public function getPaymentFormHtml(array $params): ?string
     {
         return '';
     }
@@ -46,9 +72,8 @@ trait GatewayTrait
      *
      * @return PaymentSource
      */
-    public function createPaymentSource(BasePaymentForm $sourceData, int $userId): PaymentSource
+    public function createPaymentSource(BasePaymentForm $sourceData, int $customerId): PaymentSource
     {
-        return false;
     }
 
     /**
@@ -58,7 +83,7 @@ trait GatewayTrait
      *
      * @return bool
      */
-    public function deletePaymentSource($token): bool
+    public function deletePaymentSource(string $token): bool
     {
         return false;
     }
@@ -67,7 +92,7 @@ trait GatewayTrait
      * Processes a webhook and return a response
      *
      * @return WebResponse
-     * @throws \Throwable if something goes wrong
+     * @throws Throwable if something goes wrong
      */
     public function processWebHook(): WebResponse
     {

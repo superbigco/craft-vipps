@@ -33,26 +33,26 @@ class LogToFile
     /**
      * @var string
      */
-    public static $handle = 'vipps';
+    public static string $handle = 'vipps';
 
     /**
      * @var bool
      */
-    public static $logToCraft = true;
+    public static bool $logToCraft = true;
 
     /**
      * @var bool
      * @deprecated in 1.1.0
      */
-    public static $logUserIp = false;
+    public static bool $logUserIp = false;
 
     /**
      * Logs an info message to a file with the provided handle.
      *
-     * @param string|array $message
+     * @param array|string $message
      * @param string|null  $handle
      */
-    public static function info($message, string $handle = null)
+    public static function info(array|string $message, string $handle = null): void
     {
         self::log($message, $handle, 'info');
     }
@@ -60,10 +60,10 @@ class LogToFile
     /**
      * Logs an error message to a file with the provided handle.
      *
-     * @param string|array $message
+     * @param array|string $message
      * @param string|null  $handle
      */
-    public static function error($message, string $handle = null)
+    public static function error(array|string $message, string $handle = null): void
     {
         self::log($message, $handle, 'error');
     }
@@ -71,11 +71,11 @@ class LogToFile
     /**
      * Logs the message to a file with the provided handle and level.
      *
-     * @param string|array $message
+     * @param array|string $message
      * @param string|null  $handle
      * @param string       $level
      */
-    public static function log($message, string $handle = null, string $level = 'info')
+    public static function log(array|string $message, string $handle = null, string $level = 'info'): void
     {
         $ip = '';
         $userId = '';
@@ -127,25 +127,23 @@ class LogToFile
         }
     }
 
-    public static function encodeForLog($data)
+    public static function encodeForLog($data): string
     {
         return Json::encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
-    public static function formatLogVariables($variables = [])
+    public static function formatLogVariables($variables = []): array
     {
-        $variables = array_map(function($value) {
+        return array_map(function($value) {
             if (is_array($value)) {
                 $value = Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
             }
 
             return $value;
         }, $variables);
-
-        return $variables;
     }
 
-    public static function formatLogMessage($message, $variables = [])
+    public static function formatLogMessage($message, $variables = []): string
     {
         if (is_array($message)) {
             $message = Json::encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);

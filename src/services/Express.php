@@ -18,6 +18,11 @@ use craft\events\RegisterComponentTypesEvent;
 
 use craft\helpers\UrlHelper;
 use superbig\vipps\Vipps;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
+use yii\base\Exception;
+use function is_numeric;
 
 /**
  * @author    Superbig
@@ -46,10 +51,10 @@ class Express extends Component
     /**
      * @param null  $purchasable
      *
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
-     * @throws \yii\base\Exception
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws Exception
      */
     public function getButton($purchasable = null, array $config = []): string
     {
@@ -57,7 +62,7 @@ class Express extends Component
         $oldMode = $view->getTemplateMode();
         $view->setTemplateMode($view::TEMPLATE_MODE_CP);
 
-        if (\is_numeric($purchasable)) {
+        if (is_numeric($purchasable)) {
             $purchasable = Plugin::getInstance()->getVariants()->getVariantById($purchasable);
         }
 
@@ -101,10 +106,10 @@ class Express extends Component
     /**
      * @param null  $purchasable
      *
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
-     * @throws \yii\base\Exception
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws Exception
      */
     public function getFormButton($purchasable = null, array $config = []): string
     {

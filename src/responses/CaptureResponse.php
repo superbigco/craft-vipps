@@ -11,7 +11,6 @@
 namespace superbig\vipps\responses;
 
 use craft\commerce\base\RequestResponseInterface;
-use superbig\vipps\Vipps;
 
 /**
  * @author    Superbig
@@ -23,15 +22,15 @@ class CaptureResponse implements RequestResponseInterface
     /**
      * @var
      */
-    protected $data = [];
+    protected array $data = [];
     /**
      * @var string
      */
-    private $_redirect = '';
+    private string $_redirect = '';
     /**
      * @var bool
      */
-    private $_processing = false;
+    private bool $_processing = false;
 
     /**
      * Response constructor.
@@ -43,22 +42,20 @@ class CaptureResponse implements RequestResponseInterface
         $this->data = $data;
     }
 
-    // Public Properties
-    // =========================================================================
-
-    public function setRedirectUrl(string $url)
+  
+    public function setRedirectUrl(string $url): void
     {
         $this->_redirect = $url;
     }
 
-    public function setProcessing(bool $status)
+    public function setProcessing(bool $status): void
     {
         $this->_processing = $status;
     }
 
 
     /**
-     * Returns whether or not the payment was successful.
+     * Returns whether the payment was successful.
      *
      * @return bool
      */
@@ -68,7 +65,7 @@ class CaptureResponse implements RequestResponseInterface
     }
 
     /**
-     * Returns whether or not the payment is being processed by gateway.
+     * Returns whether the payment is being processed by gateway.
      *
      * @return bool
      */
@@ -143,7 +140,7 @@ class CaptureResponse implements RequestResponseInterface
      *
      * @return mixed
      */
-    public function getData()
+    public function getData(): mixed
     {
         return $this->data;
     }
@@ -165,10 +162,10 @@ class CaptureResponse implements RequestResponseInterface
     /**
      * Perform the redirect.
      *
-     * @return mixed
+     * @return void
      */
-    public function redirect()
+    public function redirect(): void
     {
-        return false;
+        return;
     }
 }

@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection ALL */
+
 /**
  * Vipps plugin for Craft CMS 3.x
  *
@@ -13,11 +14,11 @@ namespace superbig\vipps\controllers;
 use Craft;
 use craft\commerce\base\RequestResponseInterface;
 use craft\commerce\errors\TransactionException;
-use craft\commerce\models\Address;
 use craft\commerce\models\ShippingMethod;
 use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
 use craft\commerce\records\Transaction as TransactionRecord;
+use craft\elements\Address;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\web\Controller;
@@ -38,7 +39,7 @@ use yii\web\Response;
  */
 class CallbackController extends Controller
 {
-    protected $allowAnonymous = ['complete', 'shipping-details', 'consent', 'process-webhook', 'return'];
+    protected int|bool|array $allowAnonymous = ['complete', 'shipping-details', 'consent', 'process-webhook', 'return'];
     public $enableCsrfValidation = false;
 
     /**
@@ -47,7 +48,7 @@ class CallbackController extends Controller
      * @return bool
      * @throws HttpException
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -72,7 +73,7 @@ class CallbackController extends Controller
         $order = $transaction->getOrder();
 
         if ($order->getIsPaid()) {
-            return $this->redirect(Vipps::$plugin->payments->getFallbackUrl($order));
+            return $this->redirect(Vipps::$plugin->getPayments()->getFallbackUrl($order));
         }
 
         /** @var TransactionBehavior|Transaction $lastTransaction */
@@ -85,10 +86,10 @@ class CallbackController extends Controller
         if ($error) {
             Craft::$app->getSession()->setError($error);
 
-            return $this->redirect(Vipps::$plugin->payments->getFallbackErrorUrl($order));
+            return $this->redirect(Vipps::$plugin->getPayments()->getFallbackErrorUrl($order));
         }
 
-        return $this->redirect(Vipps::$plugin->payments->getFallbackUrl($order));
+        return $this->redirect(Vipps::$plugin->getPayments()->getFallbackUrl($order));
     }
 
     /**
@@ -136,24 +137,25 @@ class CallbackController extends Controller
 
         if ($response->isExpress()) {
             // @todo This is hardcoded while Vipps only support Norway
-            $country = Plugin::getInstance()->getCountries()->getCountryByIso('NO');
             $shippingDetails = $payload['shippingDetails'];
             $addressPayload = $shippingDetails['address'];
             $address = new Address([
                 'firstName' => ArrayHelper::getValue($payload, 'userDetails.firstName'),
                 'lastName' => ArrayHelper::getValue($payload, 'userDetails.lastName'),
-                'address1' => $addressPayload['addressLine1'] ?? null,
-                'address2' => $addressPayload['addressLine2'] ?? null,
-                'city' => $addressPayload['city'],
-                'zipCode' => $addressPayload['zipCode'],
-                'countryId' => $country->id,
+                'fullName' => implode(' ', [ArrayHelper::getValue($payload, 'userDetails.firstName'), ArrayHelper::getValue($payload, 'userDetails.lastName')]),
+                'addressLine1' => $addressPayload['addressLine1'] ?? null,
+                'addressLine2' => $addressPayload['addressLine2'] ?? null,
+                'locality' => $addressPayload['city'],
+                'postalCode' => $addressPayload['zipCode'],
+                'countryCode' => 'NO',
+                'ownerId' => $order->id,
             ]);
 
             $order->setBillingAddress($address);
             $order->setShippingAddress($address);
             $order->shippingMethodHandle = $shippingDetails['shippingMethodId'];
 
-            if (!$order->getCustomer()->getUser() && empty($order->getEmail())) {
+            if (empty($order->getEmail())) {
                 $order->setEmail($response->getEmail());
             }
 
@@ -249,26 +251,26 @@ class CallbackController extends Controller
         try {
             $order = $transaction->getOrder();
             $isFirst = true;
-            $currentHandle = $order->shippingMethodHandle;
+            $currentHandle = $order->getShippingMethod()?->handle;
             // $iso           = $payload['country'];
-            $country = Plugin::getInstance()->getCountries()->getCountryByIso('NO');
             $address = new Address([
-                'address1' => $payload['addressLine1'] ?? null,
-                'address2' => $payload['addressLine2'] ?? null,
-                'city' => $payload['city'],
-                'zipCode' => $payload['postCode'],
-                'countryId' => $country->id,
+                'addressLine1' => $payload['addressLine1'] ?? null,
+                'addressLine2' => $payload['addressLine2'] ?? null,
+                'locality' => $payload['city'],
+                'postalCode' => $payload['postCode'],
+                'countryCode' => 'NO',
             ]);
 
-            $order->setBillingAddress($address);
-            $order->setShippingAddress($address);
+            $order->setEstimatedShippingAddress($address);
+            $order->setEstimatedBillingAddress($address);
 
-            $methods = array_map(function(ShippingMethod $method) use ($order, &$isFirst, $currentHandle) {
+            $methods = array_map(function (ShippingMethod $method) use ($order, &$isFirst, $currentHandle) {
                 $price = (string)$method->getPriceForOrder($order);
                 $isDefault = 'N';
 
-                if ((!$currentHandle && $isFirst) || $currentHandle === $method->getHandle()) {
+                if ($currentHandle === $method->getHandle() || $currentHandle === null && $isFirst) {
                     $isDefault = 'Y';
+                    $isFirst = false;
                 }
 
                 return [
@@ -381,7 +383,7 @@ class CallbackController extends Controller
         }
 
         $token = Craft::$app->getRequest()->getHeaders()->get('authorization');
-        $gateway = Vipps::$plugin->payments->getGateway();
+        $gateway = Vipps::$plugin->getPayments()->getGateway();
         $authToken = $gateway->getAuthToken();
 
         if (!$token || $authToken !== $token) {
@@ -420,7 +422,7 @@ class CallbackController extends Controller
     /**
      * Updates a transaction.
      *
-     * @param Transaction              $transaction
+     * @param Transaction $transaction
      * @param RequestResponseInterface $response
      *
      * @throws TransactionException

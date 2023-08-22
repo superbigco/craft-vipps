@@ -27,11 +27,11 @@ use superbig\vipps\Vipps;
  */
 class ErrorResponse implements RequestResponseInterface
 {
-    protected $exception;
-    private $orderId = '';
-    protected $data = [];
-    private $_redirect = '';
-    private $_processing = false;
+    protected BadResponseException $exception;
+    private mixed $orderId = '';
+    protected mixed $data = [];
+    private string $_redirect = '';
+    private bool $_processing = false;
 
     /**
      * Response constructor.
@@ -45,22 +45,20 @@ class ErrorResponse implements RequestResponseInterface
         $this->data = $exception->hasResponse() ? Json::decodeIfJson((string)$exception->getResponse()->getBody()) : [];
     }
 
-    // Public Properties
-    // =========================================================================
-
-    public function setRedirectUrl(string $url)
+  
+    public function setRedirectUrl(string $url): void
     {
         $this->_redirect = $url;
     }
 
-    public function setProcessing(bool $status)
+    public function setProcessing(bool $status): void
     {
         $this->_processing = $status;
     }
 
 
     /**
-     * Returns whether or not the payment was successful.
+     * Returns whether the payment was successful.
      *
      * @return bool
      */
@@ -70,7 +68,7 @@ class ErrorResponse implements RequestResponseInterface
     }
 
     /**
-     * Returns whether or not the payment is being processed by gateway.
+     * Returns whether the payment is being processed by gateway.
      *
      * @return bool
      */
@@ -137,7 +135,7 @@ class ErrorResponse implements RequestResponseInterface
      *
      * @return mixed
      */
-    public function getData()
+    public function getData(): mixed
     {
         return $this->data;
     }
@@ -157,8 +155,8 @@ class ErrorResponse implements RequestResponseInterface
      *
      * @return mixed
      */
-    public function redirect()
+    public function redirect(): void
     {
-        return false;
+        return;
     }
 }

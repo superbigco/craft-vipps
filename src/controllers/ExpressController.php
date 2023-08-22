@@ -14,10 +14,15 @@ use Craft;
 use craft\commerce\errors\PaymentException;
 use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
+use craft\errors\ElementNotFoundException;
 use craft\web\Controller;
 
 use superbig\vipps\helpers\LogToFile;
 use superbig\vipps\Vipps;
+use Throwable;
+use yii\base\Exception;
+use yii\web\BadRequestHttpException;
+use function count;
 
 /**
  * @author    Superbig
@@ -30,11 +35,11 @@ class ExpressController extends Controller
     // =========================================================================
 
     /**
-     * @var    bool|array Allows anonymous access to this controller's actions.
+     * @var    array<int|string>|bool|int Allows anonymous access to this controller's actions.
      *         The actions must be in 'kebab-case'
      * @access protected
      */
-    protected $allowAnonymous = ['checkout'];
+    protected int|bool|array $allowAnonymous = ['checkout'];
 
     // Public Methods
     // =========================================================================
@@ -43,12 +48,12 @@ class ExpressController extends Controller
      * Initiate Express payment
      *
      * @return mixed
-     * @throws \Throwable
-     * @throws \craft\errors\ElementNotFoundException
-     * @throws \yii\base\Exception
-     * @throws \yii\web\BadRequestHttpException
+     * @throws Throwable
+     * @throws ElementNotFoundException
+     * @throws Exception
+     * @throws BadRequestHttpException
      */
-    public function actionCheckout()
+    public function actionCheckout(): mixed
     {
         $request = Craft::$app->getRequest();
         $commerce = Plugin::getInstance();
@@ -81,7 +86,7 @@ class ExpressController extends Controller
 
                 // Ignore zero value qty for multi-add forms https://github.com/craftcms/commerce/issues/330#issuecomment-384533139
                 if ($qty > 0) {
-                    $lineItem = $lineItemService->resolveLineItem($order->id, $purchasableId, $options);
+                    $lineItem = $lineItemService->resolveLineItem($order, $purchasableId, $options);
 
                     // New line items already have a qty of one.
                     if ($lineItem->id) {
@@ -101,7 +106,7 @@ class ExpressController extends Controller
 
         $originalTotalPrice = $order->getOutstandingBalance();
         $originalTotalQty = $order->getTotalQty();
-        $originalTotalAdjustments = \count($order->getAdjustments());
+        $originalTotalAdjustments = count($order->getAdjustments());
 
         // Do one final save to confirm the price does not change out from under the customer. Also removes any out of stock items etc.
         // This also confirms the products are available and discounts are current.
@@ -111,7 +116,7 @@ class ExpressController extends Controller
         if (Craft::$app->getElements()->saveElement($order)) {
             $totalPriceChanged = $originalTotalPrice !== $order->getOutstandingBalance();
             $totalQtyChanged = $originalTotalQty !== $order->getTotalQty();
-            $totalAdjustmentsChanged = $originalTotalAdjustments !== \count($order->getAdjustments());
+            $totalAdjustmentsChanged = $originalTotalAdjustments !== count($order->getAdjustments());
 
             // Has the order changed in a significant way?
             if ($totalPriceChanged || $totalQtyChanged || $totalAdjustmentsChanged) {
@@ -130,7 +135,7 @@ class ExpressController extends Controller
                 $customError = Craft::t('commerce', 'Something changed with the order before payment, please review your order and submit payment again.');
 
                 if ($request->getAcceptsJson()) {
-                    return $this->asErrorJson($customError);
+                    return $this->asJson(['error' => $customError]);
                 }
 
                 $session->setError($customError);

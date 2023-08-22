@@ -12,7 +12,9 @@ namespace superbig\vipps\responses;
 
 use craft\commerce\base\RequestResponseInterface;
 use craft\helpers\ArrayHelper;
+use Exception;
 use superbig\vipps\Vipps;
+use function in_array;
 
 /**
  * @author    Superbig
@@ -29,18 +31,9 @@ class CallbackResponse implements RequestResponseInterface
     const STATUS_CANCELLED = 'CANCELLED';
     const STATUS_REJECTED = 'REJECTED';
 
-    /**
-     * @var
-     */
-    protected $data = [];
-    /**
-     * @var string
-     */
-    private $_redirect = '';
-    /**
-     * @var bool
-     */
-    private $_processing = false;
+    protected array $data = [];
+    private string $_redirect = '';
+    private bool $_processing = false;
 
     /**
      * Response constructor.
@@ -52,25 +45,23 @@ class CallbackResponse implements RequestResponseInterface
         $this->data = $data;
     }
 
-    // Public Properties
-    // =========================================================================
 
-    public function setRedirectUrl(string $url)
+    public function setRedirectUrl(string $url): void
     {
         $this->_redirect = $url;
     }
 
-    public function setProcessing(bool $status)
+    public function setProcessing(bool $status): void
     {
         $this->_processing = $status;
     }
 
 
     /**
-     * Returns whether or not the payment was successful.
+     * Returns whether the payment was successful.
      *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function isSuccessful(): bool
     {
@@ -78,7 +69,7 @@ class CallbackResponse implements RequestResponseInterface
         $status = ArrayHelper::getValue($this->data, 'transactionInfo.status');
 
         return !$error &&
-            \in_array($status, [
+            in_array($status, [
                 self::STATUS_RESERVE,
                 self::STATUS_RESERVED,
                 self::STATUS_SALE,
@@ -86,7 +77,7 @@ class CallbackResponse implements RequestResponseInterface
     }
 
     /**
-     * Returns whether or not the payment is being processed by gateway.
+     * Returns whether the payment is being processed by gateway.
      *
      * @return bool
      */
@@ -102,7 +93,7 @@ class CallbackResponse implements RequestResponseInterface
     }
 
     /**
-     * Returns whether or not this is a Express order
+     * Returns whether this is an Express order
      *
      * @return bool
      */
@@ -167,7 +158,7 @@ class CallbackResponse implements RequestResponseInterface
      *
      * @return mixed
      */
-    public function getData()
+    public function getData(): mixed
     {
         return $this->data;
     }
@@ -187,7 +178,7 @@ class CallbackResponse implements RequestResponseInterface
      *
      * @return string
      */
-    public function getEmail(): string
+    public function getEmail(): string|null
     {
         return $this->data['userDetails']['email'] ?? null;
     }
@@ -199,7 +190,7 @@ class CallbackResponse implements RequestResponseInterface
      *
      * @return int
      */
-    public function getAmount($convert = true): int
+    public function getAmount(bool $convert = true): int
     {
         $amount = ArrayHelper::getValue($this->data, 'transactionInfo.amount', 0);
 
@@ -216,8 +207,8 @@ class CallbackResponse implements RequestResponseInterface
      *
      * @return mixed
      */
-    public function redirect()
+    public function redirect(): void
     {
-        return false;
+        return;
     }
 }

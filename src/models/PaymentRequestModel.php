@@ -15,6 +15,7 @@ use craft\base\Model;
 use craft\commerce\elements\Order;
 use craft\commerce\models\Settings;
 use craft\commerce\models\Transaction;
+use craft\helpers\App;
 use craft\helpers\UrlHelper;
 use DateTime;
 
@@ -26,15 +27,13 @@ use superbig\vipps\Vipps;
  * @package   Vipps
  * @since     1.0.0
  *
- * @property string      $mobileNumber The account to send Vipps request to
- * @property Order       $order
+ * @property string $mobileNumber The account to send Vipps request to
+ * @property Order $order
  * @property Transaction $transaction
- * @property float       $amount       Total amount in minor units (øre)
+ * @property float $amount       Total amount in minor units (øre)
  */
 class PaymentRequestModel extends Model
 {
-    // Public Properties
-    // =========================================================================
 
     const TYPE_EXPRESS = 'express';
     const TYPE_REGULAR = 'regular';
@@ -45,31 +44,31 @@ class PaymentRequestModel extends Model
         self::TYPE_REGULAR => 'eComm Regular Payment',
     ];
 
-    public $mobileNumber = '';
-    public $type = self::TYPE_EXPRESS;
-    public $amount;
-    public $orderId;
-    public $order;
-    public $transaction;
-    private $transactionShortId;
-    private $_transactionText;
-    private $_url;
+    public string $mobileNumber = '';
+    public string $type = self::TYPE_EXPRESS;
+    public float|int $amount = 0;
+    public string $orderId;
+    public ?Order $order;
+    public ?Transaction $transaction;
+    private string $transactionShortId;
+    private string $_transactionText = '';
+    private string $_url = '';
 
     // Public Methods
     // =========================================================================
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
         $this->transactionShortId = StringHelper::transactionId();
     }
 
-    public function getPayload()
+    public function getPayload(): array
     {
         // Settings
         $callbackPrefix = UrlHelper::siteUrl('vipps/callbacks');
-        $timestamp = (new \DateTime())->format(DateTime::ATOM);
+        $timestamp = (new DateTime())->format(DateTime::ATOM);
 
         // Order info
         $orderId = $this->order->id;
@@ -97,7 +96,7 @@ class PaymentRequestModel extends Model
                     'consentRemovalPrefix' => $callbackPrefix,
                     'fallBack' => $fallbackUrl,
                     'isApp' => false,
-                    'merchantSerialNumber' => Craft::parseEnv($gateway->merchantSerialNumber),
+                    'merchantSerialNumber' => App::parseEnv($gateway->merchantSerialNumber),
                     'paymentType' => $this->getType(),
                 ],
             'transaction' =>
@@ -111,7 +110,7 @@ class PaymentRequestModel extends Model
 
         if ($gateway->useBillingPhoneAsVippsPhoneNumber && !empty($billingAddress->phone)) {
             $payload['customerInfo'] = [
-                'mobileNumber' => $billingAddress->phone,
+                'mobileNumber' => StringHelper::getCleanPhone($billingAddress->phone),
             ];
         }
 
@@ -120,8 +119,8 @@ class PaymentRequestModel extends Model
 
     public function getTransactionText(): string
     {
-        if (!$this->_transactionText) {
-            $this->_transactionText = Vipps::$plugin->payments->getTransactionText($this->order);
+        if (empty($this->_transactionText)) {
+            $this->_transactionText = Vipps::$plugin->getPayments()->getTransactionText($this->order);
         }
 
         return $this->_transactionText;
@@ -142,7 +141,7 @@ class PaymentRequestModel extends Model
         ]);
     }
 
-    public function setType($type)
+    public function setType($type): static
     {
         $this->type = $type;
 
@@ -151,15 +150,15 @@ class PaymentRequestModel extends Model
 
     public function getType(): string
     {
-        return self::PAYMENT_TYPE_PARAMS[ $this->type ];
+        return self::PAYMENT_TYPE_PARAMS[$this->type];
     }
 
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->_url;
     }
 
-    public function setUrl($url = null)
+    public function setUrl($url = null): static
     {
         $this->_url = $url;
 
@@ -167,7 +166,7 @@ class PaymentRequestModel extends Model
     }
 
 
-    public function rules()
+    public function rules(): array
     {
         return [
             [['order'], 'required'],

@@ -21,11 +21,7 @@ use superbig\vipps\Vipps;
  */
 class PaymentRecord extends ActiveRecord
 {
-    // Public Static Methods
-    // =========================================================================
-
-
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%vipps_payments}}';
     }

@@ -28,7 +28,6 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use superbig\vipps\behaviors\TransactionBehavior;
 use superbig\vipps\gateways\Gateway;
-use superbig\vipps\models\Settings;
 
 use superbig\vipps\variables\VippsVariable;
 use yii\base\Event;
@@ -40,26 +39,19 @@ use yii\base\Event;
  * @package   Vipps
  * @since     1.0.0
  *
- *
- * @method Settings getSettings()
  */
 class Vipps extends Plugin
 {
     use Services;
 
-    // Static Properties
-    // =========================================================================
-
+    public bool $hasCpSettings = false;
     public static Vipps $plugin;
 
-    public static $commerceInstalled = false;
+    public static bool $commerceInstalled = false;
     public string $schemaVersion = '1.0.0';
 
-    // Public Methods
-    // =========================================================================
 
-
-    public function init()
+    public function init(): void
     {
         parent::init();
         self::$plugin = $this;
@@ -81,28 +73,15 @@ class Vipps extends Plugin
         );
     }
 
-    protected function createSettingsModel(): ?Model
+    protected function installEventListeners(): void
     {
-        return new Settings();
+        // Install our event listeners only if our table schema exists
+        if ($this->migrationsAndSchemaReady()) {
+            $this->installGlobalEventListeners();
+        }
     }
 
-
-    protected function settingsHtml(): string
-    {
-        return Craft::$app->view->renderTemplate(
-            'vipps/settings',
-            [
-                'settings' => $this->getSettings(),
-            ]
-        );
-    }
-
-    protected function installEventListeners()
-    {
-        $this->installGlobalEventListeners();
-    }
-
-    public function installGlobalEventListeners()
+    public function installGlobalEventListeners(): void
     {
         Event::on(
             Gateways::class,
@@ -157,7 +136,7 @@ class Vipps extends Plugin
         );
     }
 
-    protected function installSiteEventListeners()
+    protected function installSiteEventListeners(): void
     {
         Event::on(
             UrlManager::class,

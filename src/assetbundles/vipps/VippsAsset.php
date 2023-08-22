@@ -24,7 +24,7 @@ class VippsAsset extends AssetBundle
     // =========================================================================
 
 
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = "@superbig/vipps/assetbundles/vipps/dist";
 

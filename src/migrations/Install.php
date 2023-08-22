@@ -23,19 +23,14 @@ use superbig\vipps\Vipps;
  */
 class Install extends Migration
 {
-    // Public Properties
-    // =========================================================================
-
+  
     /**
      * @var string The database driver to use
      */
-    public $driver;
-
-    // Public Methods
-    // =========================================================================
+    public string $driver;
 
 
-    public function safeUp()
+    public function safeUp(): bool
     {
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
         if ($this->createTables()) {
@@ -50,7 +45,7 @@ class Install extends Migration
     }
 
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
         $this->removeTables();
@@ -58,13 +53,10 @@ class Install extends Migration
         return true;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @return bool
      */
-    protected function createTables()
+    protected function createTables(): bool
     {
         $tablesCreated = false;
 
@@ -91,25 +83,17 @@ class Install extends Migration
     /**
      * @return void
      */
-    protected function createIndexes()
+    protected function createIndexes(): void
     {
         $this->createIndex(
-            $this->db->getIndexName(
-                PaymentRecord::tableName(),
-                'shortId',
-                true
-            ),
+            $this->db->getIndexName(),
             PaymentRecord::tableName(),
             'shortId',
             true
         );
 
         $this->createIndex(
-            $this->db->getIndexName(
-                PaymentRecord::tableName(),
-                'transactionReference',
-                true
-            ),
+            $this->db->getIndexName(),
             PaymentRecord::tableName(),
             'transactionReference',
             true
@@ -119,10 +103,10 @@ class Install extends Migration
     /**
      * @return void
      */
-    protected function addForeignKeys()
+    protected function addForeignKeys(): void
     {
         $this->addForeignKey(
-            $this->db->getForeignKeyName(PaymentRecord::tableName(), 'orderId'),
+            $this->db->getForeignKeyName(),
             PaymentRecord::tableName(),
             'orderId',
             '{{%elements}}',
@@ -135,7 +119,7 @@ class Install extends Migration
     /**
      * @return void
      */
-    protected function removeTables()
+    protected function removeTables(): void
     {
         $this->dropTableIfExists(PaymentRecord::tableName());
     }

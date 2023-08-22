@@ -14,6 +14,7 @@ use craft\commerce\elements\Order;
 use craft\helpers\Template;
 
 use superbig\vipps\Vipps;
+use Twig\Markup;
 
 /**
  * Vipps Utility
@@ -24,9 +25,6 @@ use superbig\vipps\Vipps;
  */
 class VippsVariable
 {
-    // Public Methods
-    // =========================================================================
-
     public function getOrderDetails(Order $order)
     {
         return Vipps::$plugin->getPayments()->getOrderDetails($order);
@@ -36,7 +34,7 @@ class VippsVariable
      * @param null  $purchasable
      *
      */
-    public function getExpressButton($purchasable = null, array $config = []): \Twig\Markup
+    public function getExpressButton($purchasable = null, array $config = []): Markup
     {
         $html = Vipps::$plugin->getExpress()->getButton($purchasable, $config);
 
@@ -52,7 +50,7 @@ class VippsVariable
      * @param null  $purchasable
      *
      */
-    public function getExpressFormButton($purchasable = null, array $config = []): \Twig\Markup
+    public function getExpressFormButton($purchasable = null, array $config = []): Markup
     {
         $html = Vipps::$plugin->getExpress()->getFormButton($purchasable, $config);
 

@@ -21,29 +21,27 @@ use superbig\vipps\Vipps;
  */
 class PaymentModel extends Model
 {
-    // Public Properties
-    // =========================================================================
-
+  
     /**
      * @var string
      */
-    public $shortId = '';
+    public string $shortId = '';
 
     /**
      * @var int
      */
-    public $orderId;
+    public int $orderId;
 
     /**
      * @var int
      */
-    public $transactionReference;
+    public int $transactionReference;
 
     // Public Methods
     // =========================================================================
 
 
-    public function rules()
+    public function rules(): array
     {
         return [
             [['shortId', 'orderId', 'transactionReference'], 'required'],

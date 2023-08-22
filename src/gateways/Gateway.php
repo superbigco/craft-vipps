@@ -20,6 +20,7 @@ use craft\commerce\Plugin;
 use craft\helpers\StringHelper;
 
 use superbig\vipps\Vipps;
+use yii\base\Exception;
 
 /**
  * @author    Superbig
@@ -30,36 +31,30 @@ class Gateway extends BaseGateway
 {
     use GatewayTrait;
 
-    // Public Properties
-    // =========================================================================
-
-    public $clientId = '';
-    public $clientSecret = '';
-    public $subscriptionKeyAccessToken = '';
-    public $subscriptionKeyEcommerce = '';
-    public $merchantSerialNumber = '';
-    public $transactionText = '';
-    public $testMode = false;
-    public $expressCheckout = true;
-    public $createUserOnExpressCheckout = true;
-    public $loginWithVipps = false;
-    public $addItemToCartIfAlreadyExists = false;
-    public $newCartOnExpressCheckout = true;
-    public $fallbackUrl = '';
-    public $errorFallbackUrl = '';
-    public $authToken = '';
-    public $captureOnStatusChange = false;
-    public $captureStatusUid = '';
-    public $useBillingPhoneAsVippsPhoneNumber = true;
+    public string $clientId = '';
+    public string $clientSecret = '';
+    public string $subscriptionKeyAccessToken = '';
+    public string $subscriptionKeyEcommerce = '';
+    public string $merchantSerialNumber = '';
+    public string $transactionText = '';
+    public bool $testMode = false;
+    public bool $expressCheckout = true;
+    public bool $createUserOnExpressCheckout = true;
+    public bool $loginWithVipps = false;
+    public bool $addItemToCartIfAlreadyExists = false;
+    public bool $newCartOnExpressCheckout = true;
+    public string $fallbackUrl = '';
+    public string $errorFallbackUrl = '';
+    public string $authToken = '';
+    public bool $captureOnStatusChange = false;
+    public string $captureStatusUid = '';
+    public bool $useBillingPhoneAsVippsPhoneNumber = true;
 
 
     public static function displayName(): string
     {
         return Craft::t('vipps', 'Vipps');
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Makes an authorize request.
@@ -71,9 +66,7 @@ class Gateway extends BaseGateway
      */
     public function authorize(Transaction $transaction, BasePaymentForm $form): RequestResponseInterface
     {
-        $request = Vipps::$plugin->getPayments()->intiatePaymentFromGateway($transaction);
-
-        return $request;
+        return Vipps::$plugin->getPayments()->intiatePaymentFromGateway($transaction);
     }
 
     /**
@@ -83,39 +76,12 @@ class Gateway extends BaseGateway
      * @param string      $reference   Reference for the transaction being captured.
      *
      * @return RequestResponseInterface
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function capture(Transaction $transaction, string $reference): RequestResponseInterface
     {
         // https://github.com/craftcms/commerce-omnipay/blob/master/src/base/Gateway.php#L549
-        $response = Vipps::$plugin->getPayments()->captureFromGateway($transaction);
-
-        return $response;
-    }
-
-    /**
-     * Complete the purchase for offsite payments.
-     *
-     * @param Transaction $transaction The transaction
-     *
-     * @return RequestResponseInterface
-     */
-    public function completePurchase(Transaction $transaction): RequestResponseInterface
-    {
-        // TODO: Implement completePurchase() method.
-    }
-
-    /**
-     * Makes a purchase request.
-     *
-     * @param Transaction     $transaction The purchase transaction
-     * @param BasePaymentForm $form        A form filled with payment info
-     *
-     * @return RequestResponseInterface
-     */
-    public function purchase(Transaction $transaction, BasePaymentForm $form): RequestResponseInterface
-    {
-        // TODO: Implement purchase() method.
+        return Vipps::$plugin->getPayments()->captureFromGateway($transaction);
     }
 
     /**
@@ -124,13 +90,11 @@ class Gateway extends BaseGateway
      * @param Transaction $transaction The refund transaction
      *
      * @return RequestResponseInterface
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function refund(Transaction $transaction): RequestResponseInterface
     {
-        $response = Vipps::$plugin->getPayments()->refundFromGateway($transaction);
-
-        return $response;
+        return Vipps::$plugin->getPayments()->refundFromGateway($transaction);
     }
 
     public function getAuthToken()
@@ -139,7 +103,7 @@ class Gateway extends BaseGateway
     }
 
 
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('vipps/gatewaySettings', [
             'gateway' => $this,
@@ -155,7 +119,7 @@ class Gateway extends BaseGateway
         ];
     }
 
-    public function getOrderStatuses()
+    public function getOrderStatuses(): array
     {
         return array_map(function(OrderStatus $orderStatus) {
             return [
@@ -165,7 +129,7 @@ class Gateway extends BaseGateway
         }, Plugin::getInstance()->getOrderStatuses()->getAllOrderStatuses());
     }
 
-    public function rules()
+    public function rules(): array
     {
         return array_merge(parent::rules(), [
             [

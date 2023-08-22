@@ -95,20 +95,20 @@ This is an overview that shows you where to get the different config values thro
 
 ### Callback URLs
 
-Note that all URLs passed to Vipps will have to be publicly available. Vipps will validate the URL, and return an error if its accessible from their servers. 
+Note that all URLs passed to Vipps will have to be publicly available. Vipps will validate the URL, and return an error if it is accessible from their servers. 
 
 ## Using Vipps
 
 ## Express Checkout Buttons
 
-Vipps allow a customer to check and pay for a order straight in the Vipps out, decreasing the number of steps a customer have to take to finish a order.
+Vipps allow a customer to check and pay for an order straight in the Vipps out, decreasing the number of steps a customer have to take to finish an order.
 
-To display a Express Checkout button for a variant:
+To display an Express Checkout button for a variant:
 ```twig
 {{ craft.vipps.getExpressFormButton(variant) }}
 ```
 
-To display a Express Checkout button for a cart:
+To display an Express Checkout button for a cart:
 ```twig
 {{ craft.vipps.getExpressFormButton() }}
 ```

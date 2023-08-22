@@ -1,6 +1,6 @@
 ---
-name: Bug report
-about: Create a bug report to help us improve
+name: Bug Report
+about: Report an issue or unexpected behavior
 title: ''
 labels: bug
 assignees: sjelfull
@@ -10,21 +10,19 @@ assignees: sjelfull
 **Describe the bug**
 A clear and concise description of what the bug is.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+**Steps to reproduce**
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+1. 
+2.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Screenshots/Video**
+
+If applicable, add screenshots or videos to help explain your problem.
 
 **Additional info**
-- Craft version:
+- Craft CMS version:
+- Craft Commerce version:
+- Vipps for Craft Commerce version:
 - PHP version:
 - Database driver & version:
 - Plugins & versions:
