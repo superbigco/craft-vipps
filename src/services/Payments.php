@@ -237,7 +237,7 @@ class Payments extends Component
     {
         // @todo Crop?
         $lineItems = $order->getLineItems();
-        $lines = array_map(static function (LineItem $item): string {
+        $lines = array_map(static function(LineItem $item): string {
             $variant = $item->getPurchasable();
             /** @var Variant $variant */
             return sprintf('%dx %s', $item->qty, $variant->title);

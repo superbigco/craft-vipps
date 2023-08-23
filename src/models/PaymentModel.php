@@ -21,7 +21,6 @@ use superbig\vipps\Vipps;
  */
 class PaymentModel extends Model
 {
-  
     /**
      * @var string
      */

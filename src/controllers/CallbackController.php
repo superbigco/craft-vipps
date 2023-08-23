@@ -1,4 +1,6 @@
-<?php /** @noinspection ALL */
+<?php
+
+/** @noinspection ALL */
 
 /**
  * Vipps plugin for Craft CMS 3.x
@@ -264,7 +266,7 @@ class CallbackController extends Controller
             $order->setEstimatedShippingAddress($address);
             $order->setEstimatedBillingAddress($address);
 
-            $methods = array_map(function (ShippingMethod $method) use ($order, &$isFirst, $currentHandle) {
+            $methods = array_map(function(ShippingMethod $method) use ($order, &$isFirst, $currentHandle) {
                 $price = (string)$method->getPriceForOrder($order);
                 $isDefault = 'N';
 

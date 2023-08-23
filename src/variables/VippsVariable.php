@@ -10,7 +10,6 @@
 
 namespace superbig\vipps\variables;
 
-use craft\commerce\elements\Order;
 use craft\helpers\Template;
 
 use superbig\vipps\Vipps;

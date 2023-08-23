@@ -17,7 +17,7 @@ jobs:
     uses: superbigco/.github/.github/workflows/ci.yml@master
     with:
       craft_version: '4'
-      jobs: '["ecs", "phpstan", "prettier"]'
+      jobs: '["ecs", "phpstan"]'
       notify_slack: true
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}

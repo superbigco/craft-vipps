@@ -30,8 +30,8 @@ use superbig\vipps\Vipps;
  */
 class Api extends Component
 {
-    const ENDPOINT = 'https://api.vipps.no';
-    const TEST_ENDPOINT = 'https://apitest.vipps.no';
+    public const ENDPOINT = 'https://api.vipps.no';
+    public const TEST_ENDPOINT = 'https://apitest.vipps.no';
 
     private ?Client $_client = null;
     private string|null $_accessToken = null;

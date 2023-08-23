@@ -11,7 +11,6 @@
 namespace superbig\vipps;
 
 use Craft;
-use craft\base\Model;
 use craft\base\Plugin;
 use craft\commerce\models\Transaction;
 use craft\commerce\Plugin as CommercePlugin;
@@ -86,7 +85,7 @@ class Vipps extends Plugin
         Event::on(
             Gateways::class,
             Gateways::EVENT_REGISTER_GATEWAY_TYPES,
-            function (RegisterComponentTypesEvent $event) {
+            function(RegisterComponentTypesEvent $event) {
                 $event->types[] = Gateway::class;
             }
         );
@@ -106,14 +105,14 @@ class Vipps extends Plugin
         Event::on(
             CraftVariable::class,
             CraftVariable::EVENT_INIT,
-            function (Event $event) {
+            function(Event $event) {
                 /** @var CraftVariable $variable */
                 $variable = $event->sender;
                 $variable->set('vipps', VippsVariable::class);
             }
         );
 
-        Event::on(Transaction::class, Transaction::EVENT_DEFINE_BEHAVIORS, function (DefineBehaviorsEvent $event) {
+        Event::on(Transaction::class, Transaction::EVENT_DEFINE_BEHAVIORS, function(DefineBehaviorsEvent $event) {
             $event->behaviors[] = TransactionBehavior::class;
         });
 
@@ -121,7 +120,7 @@ class Vipps extends Plugin
         Event::on(
             Plugins::class,
             Plugins::EVENT_AFTER_LOAD_PLUGINS,
-            function () {
+            function() {
                 // Install these only after all other plugins have loaded
                 $request = Craft::$app->getRequest();
 
@@ -141,7 +140,7 @@ class Vipps extends Plugin
         Event::on(
             UrlManager::class,
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
-            function (RegisterUrlRulesEvent $event) {
+            function(RegisterUrlRulesEvent $event) {
                 $event->rules = array_merge($event->rules, [
                     'vipps/callbacks/v2/consents/<userId>' => 'vipps/callback/consent-removal',
                     'vipps/callbacks/v2/payments/<orderId>' => 'vipps/callback/complete',

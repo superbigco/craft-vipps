@@ -18,7 +18,7 @@ class LogToFile
      *
      * @see https://www.yiiframework.com/doc/api/2.0/yii-log-logger#constants
      */
-    const MESSAGE_LEVELS = [
+    public const MESSAGE_LEVELS = [
         'error' => Logger::LEVEL_ERROR,
         'info' => Logger::LEVEL_INFO,
         'trace' => Logger::LEVEL_TRACE,

@@ -21,7 +21,6 @@ use superbig\vipps\Vipps;
  */
 class ErrorModel extends Model
 {
-  
     /**
      * @var string
      */

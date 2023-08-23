@@ -209,6 +209,5 @@ class CallbackResponse implements RequestResponseInterface
      */
     public function redirect(): void
     {
-
     }
 }

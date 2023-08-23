@@ -10,7 +10,6 @@
 
 namespace superbig\vipps\models;
 
-use Craft;
 use craft\base\Model;
 use craft\commerce\elements\Order;
 use craft\commerce\models\Settings;
@@ -34,7 +33,6 @@ use superbig\vipps\Vipps;
  */
 class PaymentRequestModel extends Model
 {
-
     public const TYPE_EXPRESS = 'express';
     public const TYPE_REGULAR = 'regular';
     public const TYPE_CAPTURE = 'capture';
