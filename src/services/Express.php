@@ -13,6 +13,7 @@ namespace superbig\vipps\services;
 use Craft;
 use craft\base\Component;
 use craft\commerce\adjusters\Shipping;
+use craft\commerce\base\PurchasableInterface;
 use craft\commerce\Plugin;
 use craft\events\RegisterComponentTypesEvent;
 
@@ -41,7 +42,7 @@ class Express extends Component
             // it will get the first shipping adjuster if none is set
             // This removes the adjustment, making sure the shipping is applied by the gateway
             foreach ($e->types as $key => $adjuster) {
-                if ($adjuster === Shipping::class || $adjuster instanceof Shipping) {
+                if ($adjuster === Shipping::class) {
                     unset($e->types[ $key ]);
                 }
             }
@@ -49,14 +50,14 @@ class Express extends Component
     }
 
     /**
-     * @param null  $purchasable
+     * @param int|string|null $purchasable
      *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      * @throws Exception
      */
-    public function getButton($purchasable = null, array $config = []): string
+    public function getButton(int|string|null $purchasable = null, array $config = []): string
     {
         $view = Craft::$app->getView();
         $oldMode = $view->getTemplateMode();
@@ -104,14 +105,14 @@ class Express extends Component
     }
 
     /**
-     * @param null  $purchasable
+     * @param null|PurchasableInterface  $purchasable
      *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      * @throws Exception
      */
-    public function getFormButton($purchasable = null, array $config = []): string
+    public function getFormButton(null|PurchasableInterface $purchasable = null, array $config = []): string
     {
         $view = Craft::$app->getView();
         $oldMode = $view->getTemplateMode();

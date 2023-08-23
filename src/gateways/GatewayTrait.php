@@ -12,6 +12,7 @@ namespace superbig\vipps\gateways;
 
 use Craft;
 use craft\commerce\base\RequestResponseInterface;
+use craft\commerce\errors\NotImplementedException;
 use craft\commerce\models\payments\BasePaymentForm;
 use craft\commerce\models\payments\OffsitePaymentForm;
 use craft\commerce\models\PaymentSource;
@@ -36,7 +37,7 @@ trait GatewayTrait
      */
     public function completePurchase(Transaction $transaction): RequestResponseInterface
     {
-        // TODO: Implement completePurchase() method.
+        throw new NotImplementedException('Not implemented by the payment gateway');
     }
 
     /**
@@ -49,7 +50,7 @@ trait GatewayTrait
      */
     public function purchase(Transaction $transaction, BasePaymentForm $form): RequestResponseInterface
     {
-        // TODO: Implement purchase() method.
+        throw new NotImplementedException('Not implemented by the payment gateway');
     }
 
     /**
@@ -68,12 +69,13 @@ trait GatewayTrait
      * Creates a payment source from source data and user id.
      *
      * @param BasePaymentForm $sourceData
-     * @param int             $userId
+     * @param int             $customerId
      *
      * @return PaymentSource
      */
     public function createPaymentSource(BasePaymentForm $sourceData, int $customerId): PaymentSource
     {
+        throw new NotImplementedException('Not implemented by the payment gateway');
     }
 
     /**
@@ -96,7 +98,7 @@ trait GatewayTrait
      */
     public function processWebHook(): WebResponse
     {
-        // TODO: Implement processWebHook() method.
+        throw new NotImplementedException('Not implemented by the payment gateway');
     }
 
     /**

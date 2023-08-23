@@ -25,11 +25,6 @@ use Twig\Markup;
  */
 class VippsVariable
 {
-    public function getOrderDetails(Order $order)
-    {
-        return Vipps::$plugin->getPayments()->getOrderDetails($order);
-    }
-
     /**
      * @param null  $purchasable
      *

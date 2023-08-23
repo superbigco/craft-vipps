@@ -23,7 +23,7 @@ use superbig\vipps\Vipps;
 class RefundResponse implements RequestResponseInterface
 {
     /**
-     * @var
+     * Data for refund response
      */
     protected array $data = [];
     /**
@@ -157,12 +157,10 @@ class RefundResponse implements RequestResponseInterface
     /**
      * Perform the redirect.
      *
-     * @return mixed
+     * @return void
      */
     public function redirect(): void
     {
         Craft::$app->getResponse()->redirect($this->_redirect)->send();
-
-        return;
     }
 }

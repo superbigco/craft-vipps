@@ -127,7 +127,7 @@ class ErrorResponse implements RequestResponseInterface
      */
     public function getCode(): string
     {
-        return $this->exception->getCode();
+        return (string)$this->exception->getCode();
     }
 
     /**
@@ -153,10 +153,9 @@ class ErrorResponse implements RequestResponseInterface
     /**
      * Perform the redirect.
      *
-     * @return mixed
+     * @return void
      */
     public function redirect(): void
     {
-        return;
     }
 }

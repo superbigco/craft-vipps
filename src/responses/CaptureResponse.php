@@ -20,7 +20,7 @@ use craft\commerce\base\RequestResponseInterface;
 class CaptureResponse implements RequestResponseInterface
 {
     /**
-     * @var
+     * @var array
      */
     protected array $data = [];
     /**
@@ -166,6 +166,5 @@ class CaptureResponse implements RequestResponseInterface
      */
     public function redirect(): void
     {
-        return;
     }
 }

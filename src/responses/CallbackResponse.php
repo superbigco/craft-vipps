@@ -23,13 +23,13 @@ use function in_array;
  */
 class CallbackResponse implements RequestResponseInterface
 {
-    const STATUS_SALE = 'SALE';
-    const STATUS_RESERVE = 'RESERVE';
-    const STATUS_RESERVED = 'RESERVED';
-    const STATUS_RESERVE_FAILED = 'RESERVE_FAILED';
-    const STATUS_SALE_FAILED = 'SALE_FAILED';
-    const STATUS_CANCELLED = 'CANCELLED';
-    const STATUS_REJECTED = 'REJECTED';
+    public const STATUS_SALE = 'SALE';
+    public const STATUS_RESERVE = 'RESERVE';
+    public const STATUS_RESERVED = 'RESERVED';
+    public const STATUS_RESERVE_FAILED = 'RESERVE_FAILED';
+    public const STATUS_SALE_FAILED = 'SALE_FAILED';
+    public const STATUS_CANCELLED = 'CANCELLED';
+    public const STATUS_REJECTED = 'REJECTED';
 
     protected array $data = [];
     private string $_redirect = '';
@@ -140,7 +140,7 @@ class CallbackResponse implements RequestResponseInterface
             return '';
         }
 
-        return (string)$this->data['transactionInfo']['transactionId'] ?? '';
+        return (string)$this->data['transactionInfo']['transactionId'];
     }
 
     /**
@@ -205,10 +205,10 @@ class CallbackResponse implements RequestResponseInterface
     /**
      * Perform the redirect.
      *
-     * @return mixed
+     * @return void
      */
     public function redirect(): void
     {
-        return;
+
     }
 }

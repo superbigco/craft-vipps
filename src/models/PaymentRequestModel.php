@@ -35,11 +35,11 @@ use superbig\vipps\Vipps;
 class PaymentRequestModel extends Model
 {
 
-    const TYPE_EXPRESS = 'express';
-    const TYPE_REGULAR = 'regular';
-    const TYPE_CAPTURE = 'capture';
+    public const TYPE_EXPRESS = 'express';
+    public const TYPE_REGULAR = 'regular';
+    public const TYPE_CAPTURE = 'capture';
 
-    const PAYMENT_TYPE_PARAMS = [
+    public const PAYMENT_TYPE_PARAMS = [
         self::TYPE_EXPRESS => 'eComm Express Payment',
         self::TYPE_REGULAR => 'eComm Regular Payment',
     ];
