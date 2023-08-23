@@ -10,11 +10,10 @@
 
 namespace superbig\vipps\responses;
 
-use craft\commerce\base\RequestResponseInterface;
-use superbig\vipps\Vipps;
-
 use Craft;
-use craft\base\Model;
+use craft\commerce\base\RequestResponseInterface;
+
+use superbig\vipps\Vipps;
 
 /**
  * @author    Superbig
@@ -24,17 +23,17 @@ use craft\base\Model;
 class RefundResponse implements RequestResponseInterface
 {
     /**
-     * @var
+     * Data for refund response
      */
-    protected $data = [];
+    protected array $data = [];
     /**
      * @var string
      */
-    private $_redirect = '';
+    private string $_redirect = '';
     /**
      * @var bool
      */
-    private $_processing = false;
+    private bool $_processing = false;
 
     /**
      * Response constructor.
@@ -46,22 +45,20 @@ class RefundResponse implements RequestResponseInterface
         $this->data = $data;
     }
 
-    // Public Properties
-    // =========================================================================
-
-    public function setRedirectUrl(string $url)
+  
+    public function setRedirectUrl(string $url): void
     {
         $this->_redirect = $url;
     }
 
-    public function setProcessing(bool $status)
+    public function setProcessing(bool $status): void
     {
         $this->_processing = $status;
     }
 
 
     /**
-     * Returns whether or not the payment was successful.
+     * Returns whether the payment was successful.
      *
      * @return bool
      */
@@ -71,7 +68,7 @@ class RefundResponse implements RequestResponseInterface
     }
 
     /**
-     * Returns whether or not the payment is being processed by gateway.
+     * Returns whether the payment is being processed by gateway.
      *
      * @return bool
      */
@@ -80,17 +77,13 @@ class RefundResponse implements RequestResponseInterface
         return $this->_processing;
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function isRedirect(): bool
     {
         return !empty($this->_redirect);
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function getRedirectMethod(): string
     {
         return 'GET';
@@ -146,7 +139,7 @@ class RefundResponse implements RequestResponseInterface
      *
      * @return mixed
      */
-    public function getData()
+    public function getData(): mixed
     {
         return $this->data;
     }
@@ -164,10 +157,10 @@ class RefundResponse implements RequestResponseInterface
     /**
      * Perform the redirect.
      *
-     * @return mixed
+     * @return void
      */
-    public function redirect()
+    public function redirect(): void
     {
-        return Craft::$app->getResponse()->redirect($this->_redirect)->send();
+        Craft::$app->getResponse()->redirect($this->_redirect)->send();
     }
 }

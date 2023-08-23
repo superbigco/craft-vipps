@@ -10,16 +10,18 @@
 
 namespace superbig\vipps\services;
 
+use Craft;
+use craft\base\Component;
 use craft\commerce\Plugin as CommercePlugin;
+use craft\helpers\App;
 use craft\helpers\Json;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Psr7\Query;
+
 use superbig\vipps\helpers\LogToFile;
 use superbig\vipps\Vipps;
-
-use Craft;
-use craft\base\Component;
 
 /**
  * @author    Superbig
@@ -28,13 +30,13 @@ use craft\base\Component;
  */
 class Api extends Component
 {
-    const ENDPOINT      = 'https://api.vipps.no';
-    const TEST_ENDPOINT = 'https://apitest.vipps.no';
+    public const ENDPOINT = 'https://api.vipps.no';
+    public const TEST_ENDPOINT = 'https://apitest.vipps.no';
 
-    private $_client;
-    private $_accessToken;
+    private ?Client $_client = null;
+    private string|null $_accessToken = null;
 
-    public function init()
+    public function init(): void
     {
         // Set initial token
         $this->_getAccessToken();
@@ -43,7 +45,7 @@ class Api extends Component
     /**
      * @return array|null
      */
-    public function getAccessTokenHeader()
+    public function getAccessTokenHeader(): ?array
     {
         $token = $this->_accessToken;
 
@@ -54,8 +56,8 @@ class Api extends Component
         $gateway = Vipps::$plugin->getPayments()->getGateway();
 
         return [
-            'Authorization'             => 'Bearer ' . $token,
-            'ocp-apim-subscription-key' => Craft::parseEnv($gateway->subscriptionKeyAccessToken),
+            'Authorization' => 'Bearer ' . $token,
+            'ocp-apim-subscription-key' => App::parseEnv($gateway->subscriptionKeyAccessToken),
         ];
     }
 
@@ -71,30 +73,27 @@ class Api extends Component
 
     /**
      * @param string $url
-     * @param array  $query
+     * @param array $query
      *
      * @return array|null
      */
-    public function get($url = '', $query = [])
+    public function get(string $url = '', array $query = []): ?array
     {
         try {
-            $client   = $this->getClient();
+            $client = $this->getClient();
             $response = $client->get($url, [
                 'headers' => $this->_getDefaultHeaders(),
-                'query'   => Query::build($query),
+                'query' => Query::build($query),
             ]);
-            $body     = (string)$response->getBody();
-            $json     = Json::decodeIfJson($body);
-
-
-            return $json;
+            $body = (string)$response->getBody();
+            return Json::decodeIfJson($body);
         } catch (BadResponseException $e) {
             $responseBody = (string)$e->getResponse()->getBody();
-            $json         = Json::decodeIfJson($responseBody);
+            $json = Json::decodeIfJson($responseBody);
             $this->_logException($e);
 
             return $json;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_logException($e);
 
             return null;
@@ -103,30 +102,28 @@ class Api extends Component
 
     /**
      * @param string $url
-     * @param array  $data
+     * @param array $data
      *
      * @return array|null
      */
-    public function post($url = '', $data = [])
+    public function post(string $url = '', array $data = []): ?array
     {
         try {
-            $client   = $this->getClient();
+            $client = $this->getClient();
             $response = $client->post($url, [
                 'headers' => $this->_getDefaultHeaders(),
-                'json'    => $data,
+                'json' => $data,
             ]);
-            $body     = (string)$response->getBody();
-            $json     = Json::decodeIfJson($body);
-
-            return $json;
+            $body = (string)$response->getBody();
+            return Json::decodeIfJson($body);
         } catch (BadResponseException $e) {
             $responseBody = (string)$e->getResponse()->getBody();
-            $json         = Json::decodeIfJson($responseBody);
+            $json = Json::decodeIfJson($responseBody);
 
             $this->_logException($e);
 
             return $json;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_logException($e);
 
             return null;
@@ -141,7 +138,7 @@ class Api extends Component
         if (!$this->_client) {
             $this->_client = new Client([
                 'base_uri' => $this->getApiUrl(),
-                'headers'  => $this->_getDefaultHeaders(),
+                'headers' => $this->_getDefaultHeaders(),
             ]);
         }
 
@@ -156,44 +153,43 @@ class Api extends Component
     {
         // @todo Cache this?
         if (!$this->_accessToken) {
-            $url                = 'accessToken/get';
-            $response           = $this->post($url, []);
+            $url = 'accessToken/get';
+            $response = $this->post($url, []);
             $this->_accessToken = $response['access_token'] ?? null;
         }
 
         return $this->_accessToken;
     }
 
-    private function _logException(\Exception $e)
+    private function _logException(Exception $e): void
     {
         if ($e instanceof BadResponseException) {
-            $url          = $e->getRequest()->getUri();
-            $method       = $e->getRequest()->getMethod();
+            $url = $e->getRequest()->getUri();
+            $method = $e->getRequest()->getMethod();
             $responseBody = (string)$e->getResponse()->getBody();
-            $json         = Json::decodeIfJson($responseBody);
+            $json = Json::decodeIfJson($responseBody);
 
             $error = Craft::t(
                 'vipps',
                 "API call failed for {method} {url}: {message} @ {file}:{line}. \n{stacktrace}",
                 [
-                    'url'        => $url,
-                    'method'     => $method,
-                    'message'    => $e->getMessage(),
-                    'file'       => $e->getFile(),
-                    'line'       => $e->getLine(),
+                    'url' => $url,
+                    'method' => $method,
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
                     'stacktrace' => $e->getTraceAsString(),
-                    'response'   => print_r($json, true),
+                    'response' => print_r($json, true),
                 ]
             );
-        }
-        else {
+        } else {
             $error = Craft::t(
                 'vipps',
                 "API call failed: {message} @ {file}:{line}. \n{stacktrace}",
                 [
-                    'message'    => $e->getMessage(),
-                    'file'       => $e->getFile(),
-                    'line'       => $e->getLine(),
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
                     'stacktrace' => $e->getTraceAsString(),
                 ]
             );
@@ -204,20 +200,20 @@ class Api extends Component
 
     private function _getDefaultHeaders(): array
     {
-        $date    = gmdate('c');
+        $date = gmdate('c');
         $request = Craft::$app->getRequest();
-        $ip      = !$request->getIsConsoleRequest() ? $request->getUserIP() : null;
+        $ip = !$request->getIsConsoleRequest() ? $request->getUserIP() : null;
         $gateway = Vipps::$plugin->getPayments()->getGateway();
         $headers = [
-            'content-type'              => 'application/json',
-            'X-Request-Id'              => $requestId = 1,
-            'X-TimeStamp'               => $date,
-            'X-Source-Address'          => $ip,
-            'cache-control'             => 'no-cache',
-            'ocp-apim-subscription-key' => Craft::parseEnv($gateway->subscriptionKeyAccessToken),
-            'client_id'                 => Craft::parseEnv($gateway->clientId),
-            'client_secret'             => Craft::parseEnv($gateway->clientSecret),
-            'Merchant-Serial-Number' => Craft::parseEnv($gateway->merchantSerialNumber),
+            'content-type' => 'application/json',
+            'X-Request-Id' => $requestId = 1,
+            'X-TimeStamp' => $date,
+            'X-Source-Address' => $ip,
+            'cache-control' => 'no-cache',
+            'ocp-apim-subscription-key' => App::parseEnv($gateway->subscriptionKeyAccessToken),
+            'client_id' => App::parseEnv($gateway->clientId),
+            'client_secret' => App::parseEnv($gateway->clientSecret),
+            'Merchant-Serial-Number' => App::parseEnv($gateway->merchantSerialNumber),
             'Vipps-System-Name' => 'craft-commerce',
             'Vipps-System-Version' => CommercePlugin::getInstance()->getVersion(),
             'Vipps-System-Plugin-Name' => 'craft-vipps',

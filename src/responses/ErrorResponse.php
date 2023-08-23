@@ -15,9 +15,6 @@ use craft\helpers\Json;
 use GuzzleHttp\Exception\BadResponseException;
 use superbig\vipps\Vipps;
 
-use Craft;
-use craft\base\Model;
-
 /**
  * @author    Superbig
  * @package   Vipps
@@ -30,11 +27,11 @@ use craft\base\Model;
  */
 class ErrorResponse implements RequestResponseInterface
 {
-    protected $exception;
-    private   $orderId     = '';
-    protected $data        = [];
-    private   $_redirect   = '';
-    private   $_processing = false;
+    protected BadResponseException $exception;
+    private mixed $orderId = '';
+    protected mixed $data = [];
+    private string $_redirect = '';
+    private bool $_processing = false;
 
     /**
      * Response constructor.
@@ -44,26 +41,24 @@ class ErrorResponse implements RequestResponseInterface
     public function __construct(BadResponseException $exception, $orderId = '')
     {
         $this->exception = $exception;
-        $this->orderId   = $orderId;
-        $this->data      = $exception->hasResponse() ? Json::decodeIfJson((string)$exception->getResponse()->getBody()) : [];
+        $this->orderId = $orderId;
+        $this->data = $exception->hasResponse() ? Json::decodeIfJson((string)$exception->getResponse()->getBody()) : [];
     }
 
-    // Public Properties
-    // =========================================================================
-
-    public function setRedirectUrl(string $url)
+  
+    public function setRedirectUrl(string $url): void
     {
         $this->_redirect = $url;
     }
 
-    public function setProcessing(bool $status)
+    public function setProcessing(bool $status): void
     {
         $this->_processing = $status;
     }
 
 
     /**
-     * Returns whether or not the payment was successful.
+     * Returns whether the payment was successful.
      *
      * @return bool
      */
@@ -73,7 +68,7 @@ class ErrorResponse implements RequestResponseInterface
     }
 
     /**
-     * Returns whether or not the payment is being processed by gateway.
+     * Returns whether the payment is being processed by gateway.
      *
      * @return bool
      */
@@ -82,17 +77,13 @@ class ErrorResponse implements RequestResponseInterface
         return $this->_processing;
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function isRedirect(): bool
     {
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function getRedirectMethod(): string
     {
         return 'GET';
@@ -136,7 +127,7 @@ class ErrorResponse implements RequestResponseInterface
      */
     public function getCode(): string
     {
-        return $this->exception->getCode();
+        return (string)$this->exception->getCode();
     }
 
     /**
@@ -144,7 +135,7 @@ class ErrorResponse implements RequestResponseInterface
      *
      * @return mixed
      */
-    public function getData()
+    public function getData(): mixed
     {
         return $this->data;
     }
@@ -162,10 +153,9 @@ class ErrorResponse implements RequestResponseInterface
     /**
      * Perform the redirect.
      *
-     * @return mixed
+     * @return void
      */
-    public function redirect()
+    public function redirect(): void
     {
-        return false;
     }
 }

@@ -10,15 +10,19 @@
 
 namespace superbig\vipps\controllers;
 
+use Craft;
 use craft\commerce\errors\PaymentException;
 use craft\commerce\models\Transaction;
 use craft\commerce\Plugin;
-use superbig\vipps\helpers\LogToFile;
-use superbig\vipps\models\PaymentRequestModel;
-use superbig\vipps\Vipps;
-
-use Craft;
+use craft\errors\ElementNotFoundException;
 use craft\web\Controller;
+
+use superbig\vipps\helpers\LogToFile;
+use superbig\vipps\Vipps;
+use Throwable;
+use yii\base\Exception;
+use yii\web\BadRequestHttpException;
+use function count;
 
 /**
  * @author    Superbig
@@ -27,16 +31,15 @@ use craft\web\Controller;
  */
 class ExpressController extends Controller
 {
-
     // Protected Properties
     // =========================================================================
 
     /**
-     * @var    bool|array Allows anonymous access to this controller's actions.
+     * @var    array<int|string>|bool|int Allows anonymous access to this controller's actions.
      *         The actions must be in 'kebab-case'
      * @access protected
      */
-    protected $allowAnonymous = ['checkout'];
+    protected int|bool|array $allowAnonymous = ['checkout'];
 
     // Public Methods
     // =========================================================================
@@ -45,23 +48,23 @@ class ExpressController extends Controller
      * Initiate Express payment
      *
      * @return mixed
-     * @throws \Throwable
-     * @throws \craft\errors\ElementNotFoundException
-     * @throws \yii\base\Exception
-     * @throws \yii\web\BadRequestHttpException
+     * @throws Throwable
+     * @throws ElementNotFoundException
+     * @throws Exception
+     * @throws BadRequestHttpException
      */
-    public function actionCheckout()
+    public function actionCheckout(): mixed
     {
-        $request       = Craft::$app->getRequest();
-        $commerce      = Plugin::getInstance();
-        $cartService   = $commerce->getCarts();
-        $order         = $cartService->getCart(true);
-        $lineItems     = $order->getLineItems();
+        $request = Craft::$app->getRequest();
+        $commerce = Plugin::getInstance();
+        $cartService = $commerce->getCarts();
+        $order = $cartService->getCart(true);
+        $lineItems = $order->getLineItems();
         $vippsPayments = Vipps::$plugin->getPayments();
-        $gateway       = $vippsPayments->getGateway();
-        $paymentForm   = $gateway->getPaymentFormModel();
-        $session       = Craft::$app->getSession();
-        $customError   = '';
+        $gateway = $vippsPayments->getGateway();
+        $paymentForm = $gateway->getPaymentFormModel();
+        $session = Craft::$app->getSession();
+        $customError = '';
 
         $vippsPayments->setIsExpress();
 
@@ -77,19 +80,18 @@ class ExpressController extends Controller
 
             foreach ($purchasables as $key => $purchasable) {
                 $purchasableId = $request->getRequiredParam("purchasables.{$key}.id");
-                $note          = $request->getParam("purchasables.{$key}.note", '');
-                $options       = $request->getParam("purchasables.{$key}.options") ?: [];
-                $qty           = (int)$request->getParam("purchasables.{$key}.qty", 1);
+                $note = $request->getParam("purchasables.{$key}.note", '');
+                $options = $request->getParam("purchasables.{$key}.options") ?: [];
+                $qty = (int)$request->getParam("purchasables.{$key}.qty", 1);
 
                 // Ignore zero value qty for multi-add forms https://github.com/craftcms/commerce/issues/330#issuecomment-384533139
                 if ($qty > 0) {
-                    $lineItem = $lineItemService->resolveLineItem($order->id, $purchasableId, $options);
+                    $lineItem = $lineItemService->resolveLineItem($order, $purchasableId, $options);
 
                     // New line items already have a qty of one.
                     if ($lineItem->id) {
                         $lineItem->qty += $qty;
-                    }
-                    else {
+                    } else {
                         $lineItem->qty = $qty;
                     }
 
@@ -102,9 +104,9 @@ class ExpressController extends Controller
         $order->shippingMethodHandle = null;
         $order->recalculate();
 
-        $originalTotalPrice       = $order->getOutstandingBalance();
-        $originalTotalQty         = $order->getTotalQty();
-        $originalTotalAdjustments = \count($order->getAdjustments());
+        $originalTotalPrice = $order->getOutstandingBalance();
+        $originalTotalQty = $order->getTotalQty();
+        $originalTotalAdjustments = count($order->getAdjustments());
 
         // Do one final save to confirm the price does not change out from under the customer. Also removes any out of stock items etc.
         // This also confirms the products are available and discounts are current.
@@ -112,9 +114,9 @@ class ExpressController extends Controller
 
         // Save the orders new values.
         if (Craft::$app->getElements()->saveElement($order)) {
-            $totalPriceChanged       = $originalTotalPrice !== $order->getOutstandingBalance();
-            $totalQtyChanged         = $originalTotalQty !== $order->getTotalQty();
-            $totalAdjustmentsChanged = $originalTotalAdjustments !== \count($order->getAdjustments());
+            $totalPriceChanged = $originalTotalPrice !== $order->getOutstandingBalance();
+            $totalQtyChanged = $originalTotalQty !== $order->getTotalQty();
+            $totalAdjustmentsChanged = $originalTotalAdjustments !== count($order->getAdjustments());
 
             // Has the order changed in a significant way?
             if ($totalPriceChanged || $totalQtyChanged || $totalAdjustmentsChanged) {
@@ -133,7 +135,7 @@ class ExpressController extends Controller
                 $customError = Craft::t('commerce', 'Something changed with the order before payment, please review your order and submit payment again.');
 
                 if ($request->getAcceptsJson()) {
-                    return $this->asErrorJson($customError);
+                    return $this->asJson(['error' => $customError]);
                 }
 
                 $session->setError($customError);
@@ -145,7 +147,7 @@ class ExpressController extends Controller
             }
         }
 
-        $redirect    = '';
+        $redirect = '';
         $transaction = null;
 
         if (!$paymentForm->hasErrors() && !$order->hasErrors()) {
@@ -154,16 +156,15 @@ class ExpressController extends Controller
                 $success = true;
             } catch (PaymentException $exception) {
                 $customError = $exception->getMessage();
-                $success     = false;
-                $method      = __METHOD__;
-                $error       = "{$customError} @ {$method}";
+                $success = false;
+                $method = __METHOD__;
+                $error = "{$customError} @ {$method}";
 
                 LogToFile::error($error);
             }
-        }
-        else {
+        } else {
             $customError = Craft::t('commerce', 'Invalid payment or order. Please review.');
-            $success     = false;
+            $success = false;
 
             LogToFile::error('Invalid payment or order. Please review.');
         }

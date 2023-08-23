@@ -1,4 +1,4 @@
-{% from "_includes/forms" import textField, lightswitchField, selectField, autoSuggestField %}
+{% from "_includes/forms" import textField, lightswitchField, selectField, autoSuggestField, selectizeField, booleanMenuField %}
 
 {{ autoSuggestField({
     label: "Client Id"|t('vipps'),
@@ -94,38 +94,48 @@
 }) }}
 
 
-{{ lightswitchField({
+{{ booleanMenuField({
     label: "Test mode"|t('vipps'),
     name: 'testMode',
-    on: gateway.testMode,
+    value: gateway.testMode,
+    yesLabel: 'On'|t('app'),
+    noLabel: 'Off'|t('app'),
     errors: gateway.getErrors('testMode'),
+    includeEnvVars: true,
 }) }}
 
-{{ lightswitchField({
+{{ booleanMenuField({
     label: "Use billing phone number as Vipps phone number"|t('vipps'),
     description: "This will set the Vipps phone number to be the same as the billing address phone number, if any."|t('vipps'),
     name: 'useBillingPhoneAsVippsPhoneNumber',
-    on: gateway.useBillingPhoneAsVippsPhoneNumber,
+    yesLabel: 'Yes'|t('app'),
+    noLabel: 'No'|t('app'),
+    value: gateway.useBillingPhoneAsVippsPhoneNumber,
     errors: gateway.getErrors('useBillingPhoneAsVippsPhoneNumber'),
+    includeEnvVars: true,
 }) }}
 
-{{ lightswitchField({
+{{ booleanMenuField({
     label: "Capture on status change"|t('vipps'),
     description: "This will enable the gateway to automatically capture on a status change - say when you change from _New_ to _Shipped_"|t('vipps'),
     name: 'captureOnStatusChange',
-    on: gateway.captureOnStatusChange,
+    yesLabel: 'Yes'|t('app'),
+    noLabel: 'No'|t('app'),
+    value: gateway.captureOnStatusChange,
     errors: gateway.getErrors('captureOnStatusChange'),
+    includeEnvVars: true,
 }) }}
 
 
-{{ selectField({
+{{ selectizeField({
     label: "Capture status"|t("vipps"),
     instructions: "Status for automatic capture."|t("vipps"),
     id: 'captureStatusUid',
     name: 'captureStatusUid',
     value: gateway.captureStatusUid,
     options: statuses,
-    errors: gateway.getErrors('captureStatusUid')
+    errors: gateway.getErrors('captureStatusUid'),
+    includeEnvVars: true,
 }) }}
 
 {#
@@ -139,10 +149,12 @@
 #}
 
 
-{{ lightswitchField({
-    label: "New cart on Express Checkout"|t('vipps'),
+{{ booleanMenuField({
+    label: "Create new cart on Express Checkout"|t('vipps'),
     instructions: "This will clear the cart if there is already any items in it when a user performs a Express Checkout",
     name: 'newCartOnExpressCheckout',
-    on: gateway.newCartOnExpressCheckout,
+    value: gateway.newCartOnExpressCheckout,
     errors: gateway.getErrors('newCartOnExpressCheckout'),
+    yesLabel: 'Yes'|t('app'),
+    noLabel: 'No'|t('app'),
 }) }}

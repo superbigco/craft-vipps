@@ -1,8 +1,8 @@
 {
     "name": "superbig/craft-vipps",
-    "description": "Integrate Commerce with Vipps",
+    "description": "Integrate Craft Commerce 4.0+ with Vipps",
     "type": "craft-plugin",
-    "version": "1.0.8",
+    "version": "2.0.0",
     "keywords": [
         "craft",
         "cms",
@@ -10,7 +10,8 @@
         "craft-plugin",
         "vipps",
         "craft commerce",
-        "commerce"
+        "commerce",
+        "gateway"
     ],
     "support": {
         "docs": "https://github.com/superbigco/craft-vipps/blob/master/README.md",
@@ -23,14 +24,26 @@
             "homepage": "https://superbig.co"
         }
     ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "require": {
-        "craftcms/cms": "^3.4.0",
-        "craftcms/commerce": "^3.0.0"
+        "php": "^8.0.2",
+        "craftcms/cms": "^4.0.0",
+        "craftcms/commerce": "^4.0.0"
+    },
+    "require-dev": {
+        "craftcms/phpstan": "dev-main",
+        "craftcms/ecs": "dev-main"
     },
     "autoload": {
         "psr-4": {
           "superbig\\vipps\\": "src/"
         }
+    },
+    "scripts": {
+        "phpstan": "phpstan analyse --memory-limit=1G",
+        "check-cs": "ecs check --ansi",
+        "fix-cs": "ecs check --ansi --fix"
     },
     "extra": {
         "name": "Vipps",
@@ -39,5 +52,14 @@
         "hasCpSection": false,
         "changelogUrl": "https://raw.githubusercontent.com/superbigco/craft-vipps/master/CHANGELOG.md",
         "class": "superbig\\vipps\\Vipps"
+    },
+    "config": {
+        "allow-plugins": {
+            "yiisoft/yii2-composer": true,
+            "craftcms/plugin-installer": true
+        },
+        "platform": {
+            "php": "8.0.2"
+        }
     }
 }

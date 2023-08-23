@@ -28,7 +28,7 @@ class TransactionBehavior extends Behavior
     /** @var Transaction */
     public $owner;
 
-    public function getVippsError()
+    public function getVippsError(): ?ErrorModel
     {
         $transaction = $this->owner;
 
@@ -41,7 +41,7 @@ class TransactionBehavior extends Behavior
         ]);
     }
 
-    public function isCancelled()
+    public function isCancelled(): bool
     {
         if (!$this->isVippsGateway()) {
             return false;
@@ -55,7 +55,7 @@ class TransactionBehavior extends Behavior
         return Json::decode($this->owner->response);
     }
 
-    public function isVippsGateway()
+    public function isVippsGateway(): bool
     {
         return $this->owner->getGateway() instanceof Gateway;
     }

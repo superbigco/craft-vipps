@@ -12,11 +12,13 @@ namespace superbig\vipps\gateways;
 
 use Craft;
 use craft\commerce\base\RequestResponseInterface;
+use craft\commerce\errors\NotImplementedException;
+use craft\commerce\models\payments\BasePaymentForm;
 use craft\commerce\models\payments\OffsitePaymentForm;
 use craft\commerce\models\PaymentSource;
-use craft\commerce\models\payments\BasePaymentForm;
 use craft\commerce\models\Transaction;
 use craft\web\Response as WebResponse;
+use Throwable;
 use yii\base\NotSupportedException;
 
 /**
@@ -27,13 +29,38 @@ use yii\base\NotSupportedException;
 trait GatewayTrait
 {
     /**
+     * Complete the purchase for offsite payments.
+     *
+     * @param Transaction $transaction The transaction
+     *
+     * @return RequestResponseInterface
+     */
+    public function completePurchase(Transaction $transaction): RequestResponseInterface
+    {
+        throw new NotImplementedException('Not implemented by the payment gateway');
+    }
+
+    /**
+     * Makes a purchase request.
+     *
+     * @param Transaction     $transaction The purchase transaction
+     * @param BasePaymentForm $form        A form filled with payment info
+     *
+     * @return RequestResponseInterface
+     */
+    public function purchase(Transaction $transaction, BasePaymentForm $form): RequestResponseInterface
+    {
+        throw new NotImplementedException('Not implemented by the payment gateway');
+    }
+
+    /**
      * Returns payment Form HTML
      *
      * @param array $params
      *
      * @return string|null
      */
-    public function getPaymentFormHtml(array $params)
+    public function getPaymentFormHtml(array $params): ?string
     {
         return '';
     }
@@ -42,13 +69,13 @@ trait GatewayTrait
      * Creates a payment source from source data and user id.
      *
      * @param BasePaymentForm $sourceData
-     * @param int             $userId
+     * @param int             $customerId
      *
      * @return PaymentSource
      */
-    public function createPaymentSource(BasePaymentForm $sourceData, int $userId): PaymentSource
+    public function createPaymentSource(BasePaymentForm $sourceData, int $customerId): PaymentSource
     {
-        return false;
+        throw new NotImplementedException('Not implemented by the payment gateway');
     }
 
     /**
@@ -58,7 +85,7 @@ trait GatewayTrait
      *
      * @return bool
      */
-    public function deletePaymentSource($token): bool
+    public function deletePaymentSource(string $token): bool
     {
         return false;
     }
@@ -67,11 +94,11 @@ trait GatewayTrait
      * Processes a webhook and return a response
      *
      * @return WebResponse
-     * @throws \Throwable if something goes wrong
+     * @throws Throwable if something goes wrong
      */
     public function processWebHook(): WebResponse
     {
-        // TODO: Implement processWebHook() method.
+        throw new NotImplementedException('Not implemented by the payment gateway');
     }
 
     /**

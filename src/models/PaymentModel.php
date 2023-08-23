@@ -10,10 +10,9 @@
 
 namespace superbig\vipps\models;
 
-use superbig\vipps\Vipps;
-
-use Craft;
 use craft\base\Model;
+
+use superbig\vipps\Vipps;
 
 /**
  * @author    Superbig
@@ -22,31 +21,26 @@ use craft\base\Model;
  */
 class PaymentModel extends Model
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var string
      */
-    public $shortId = '';
+    public string $shortId = '';
 
     /**
      * @var int
      */
-    public $orderId;
+    public int $orderId;
 
     /**
      * @var int
      */
-    public $transactionReference;
+    public int $transactionReference;
 
     // Public Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
-    public function rules()
+
+    public function rules(): array
     {
         return [
             [['shortId', 'orderId', 'transactionReference'], 'required'],

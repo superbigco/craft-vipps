@@ -10,12 +10,10 @@
 
 namespace superbig\vipps\variables;
 
-use craft\commerce\elements\Order;
 use craft\helpers\Template;
-use superbig\bring\Bring;
 
-use Craft;
 use superbig\vipps\Vipps;
+use Twig\Markup;
 
 /**
  * Vipps Utility
@@ -26,41 +24,29 @@ use superbig\vipps\Vipps;
  */
 class VippsVariable
 {
-    // Public Methods
-    // =========================================================================
-
-    public function getOrderDetails(Order $order)
-    {
-        return Vipps::$plugin->getPayments()->getOrderDetails($order);
-    }
-
     /**
      * @param null  $purchasable
-     * @param array $config
      *
-     * @return \Twig_Markup
      */
-    public function getExpressButton($purchasable = null, array $config = []): \Twig_Markup
+    public function getExpressButton($purchasable = null, array $config = []): Markup
     {
-        $html = Vipps::$plugin->express->getButton($purchasable, $config);
+        $html = Vipps::$plugin->getExpress()->getButton($purchasable, $config);
 
         return Template::raw($html);
     }
 
     public function getExpressUrl($purchasable = null, array $config = []): string
     {
-        return Vipps::$plugin->express->getCheckoutUrl($purchasable, $config);
+        return Vipps::$plugin->getExpress()->getCheckoutUrl($purchasable, $config);
     }
 
     /**
      * @param null  $purchasable
-     * @param array $config
      *
-     * @return \Twig_Markup
      */
-    public function getExpressFormButton($purchasable = null, array $config = []): \Twig_Markup
+    public function getExpressFormButton($purchasable = null, array $config = []): Markup
     {
-        $html = Vipps::$plugin->express->getFormButton($purchasable, $config);
+        $html = Vipps::$plugin->getExpress()->getFormButton($purchasable, $config);
 
         return Template::raw($html);
     }

@@ -46,4 +46,23 @@ class StringHelper extends \craft\helpers\StringHelper
             random_int(0, 0xffff)
         );
     }
+
+    /**
+     * Make sure a phone number is 8 chars and isn't prefixed with +xx
+     *
+     * @param string $phone
+     * @return string
+     */
+    public static function getCleanPhone(string $phone)
+    {
+        // Strip space from phone number
+        $phone = str_replace(' ', '', $phone);
+
+        // Strip the prefix if it starts with +xx or 00xx
+        if (preg_match('/^(\+\d{2}|00\d{2})\d{8}$/', $phone, $matches)) {
+            $phone = substr($phone, strlen($matches[1]));
+        }
+
+        return $phone;
+    }
 }

@@ -10,10 +10,9 @@
 
 namespace superbig\vipps\models;
 
-use superbig\vipps\Vipps;
-
-use Craft;
 use craft\base\Model;
+
+use superbig\vipps\Vipps;
 
 /**
  * @author    Superbig
@@ -22,48 +21,43 @@ use craft\base\Model;
  */
 class ErrorModel extends Model
 {
-    // Public Properties
-    // =========================================================================
+    /**
+     * @var string
+     */
+    public string $errorCode = '';
 
     /**
      * @var string
      */
-    public $errorCode = '';
+    public string $errorMessage = '';
 
     /**
      * @var string
      */
-    public $errorMessage = '';
-
-    /**
-     * @var string
-     */
-    public $errorGroup = '';
+    public string $errorGroup = '';
 
     /**
      * @var int
      */
-    public $orderId;
+    public int $orderId;
 
     // Public Methods
     // =========================================================================
 
-    public function getErrorGroupLabel()
+    public function getErrorGroupLabel(): void
     {
         $groups = [
             'Authentication' => 'Authentication', // Authentication Failure because of wrong token provided
-            'Payment'        => 'Payment', // Failure while doing a payment Authorization, mostly because of PSP errors
+            'Payment' => 'Payment', // Failure while doing a payment Authorization, mostly because of PSP errors
             'InvalidRequest' => 'InvalidRequest', // Request contains invalid parameters
             'VippsError' => 'VippsError', // Internal Vipps application error
-            'Customer' => 'Customer', // Error raised because of Vipps user (Example: User not registered with Vipps ....
+            'Customer' => 'Customer', // Error raised because of Vipps user (Example: User not registered with Vipps ....)
             'Merchant' => 'Merchant', // Errors regarding the merchant
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function rules()
+
+    public function rules(): array
     {
         return [
             [['shortId', 'orderId'], 'required'],

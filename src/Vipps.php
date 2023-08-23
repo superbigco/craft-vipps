@@ -10,27 +10,23 @@
 
 namespace superbig\vipps;
 
+use Craft;
+use craft\base\Plugin;
 use craft\commerce\models\Transaction;
 use craft\commerce\Plugin as CommercePlugin;
 use craft\commerce\services\Gateways;
 use craft\commerce\services\OrderAdjustments;
 use craft\commerce\services\OrderHistories;
 use craft\events\DefineBehaviorsEvent;
+use craft\events\RegisterComponentTypesEvent;
+
+use craft\events\RegisterUrlRulesEvent;
+
+use craft\services\Plugins;
 use craft\web\twig\variables\CraftVariable;
+use craft\web\UrlManager;
 use superbig\vipps\behaviors\TransactionBehavior;
 use superbig\vipps\gateways\Gateway;
-use superbig\vipps\helpers\StringHelper;
-
-use superbig\vipps\models\Settings;
-
-use Craft;
-use craft\base\Plugin;
-use craft\services\Plugins;
-use craft\events\PluginEvent;
-use craft\web\UrlManager;
-use craft\services\Utilities;
-use craft\events\RegisterComponentTypesEvent;
-use craft\events\RegisterUrlRulesEvent;
 
 use superbig\vipps\variables\VippsVariable;
 use yii\base\Event;
@@ -42,41 +38,19 @@ use yii\base\Event;
  * @package   Vipps
  * @since     1.0.0
  *
- *
- * @method Settings getSettings()
  */
 class Vipps extends Plugin
 {
     use Services;
 
-    // Static Properties
-    // =========================================================================
+    public bool $hasCpSettings = false;
+    public static Vipps $plugin;
 
-    /**
-     * @var Vipps
-     */
-    public static $plugin;
+    public static bool $commerceInstalled = false;
+    public string $schemaVersion = '1.0.0';
 
-    /**
-     * @var bool
-     */
-    public static $commerceInstalled = false;
 
-    // Public Properties
-    // =========================================================================
-
-    /**
-     * @var string
-     */
-    public $schemaVersion = '1.0.0';
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
+    public function init(): void
     {
         parent::init();
         self::$plugin = $this;
@@ -98,38 +72,15 @@ class Vipps extends Plugin
         );
     }
 
-    // Protected Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected function createSettingsModel()
+    protected function installEventListeners(): void
     {
-        return new Settings();
+        // Install our event listeners only if our table schema exists
+        if ($this->migrationsAndSchemaReady()) {
+            $this->installGlobalEventListeners();
+        }
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function settingsHtml(): string
-    {
-        return Craft::$app->view->renderTemplate(
-            'vipps/settings',
-            [
-                'settings' => $this->getSettings(),
-            ]
-        );
-    }
-
-    protected function installEventListeners()
-    {
-
-        $this->installGlobalEventListeners();
-
-    }
-
-    public function installGlobalEventListeners()
+    public function installGlobalEventListeners(): void
     {
         Event::on(
             Gateways::class,
@@ -162,7 +113,7 @@ class Vipps extends Plugin
         );
 
         Event::on(Transaction::class, Transaction::EVENT_DEFINE_BEHAVIORS, function(DefineBehaviorsEvent $event) {
-           $event->behaviors[] = TransactionBehavior::class;
+            $event->behaviors[] = TransactionBehavior::class;
         });
 
         // Handler: Plugins::EVENT_AFTER_LOAD_PLUGINS
@@ -184,18 +135,18 @@ class Vipps extends Plugin
         );
     }
 
-    protected function installSiteEventListeners()
+    protected function installSiteEventListeners(): void
     {
         Event::on(
             UrlManager::class,
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
             function(RegisterUrlRulesEvent $event) {
                 $event->rules = array_merge($event->rules, [
-                    'vipps/callbacks/v2/consents/<userId>'                  => 'vipps/callback/consent-removal',
-                    'vipps/callbacks/v2/payments/<orderId>'                 => 'vipps/callback/complete',
-                    'vipps/callbacks/v2/return/<orderId>'                   => 'vipps/callback/return',
+                    'vipps/callbacks/v2/consents/<userId>' => 'vipps/callback/consent-removal',
+                    'vipps/callbacks/v2/payments/<orderId>' => 'vipps/callback/complete',
+                    'vipps/callbacks/v2/return/<orderId>' => 'vipps/callback/return',
                     'vipps/callbacks/v2/payments/<orderId>/shippingDetails' => 'vipps/callback/shipping-details',
-                    'vipps/express/checkout'                                => 'vipps/express/checkout',
+                    'vipps/express/checkout' => 'vipps/express/checkout',
                 ]);
             }
         );

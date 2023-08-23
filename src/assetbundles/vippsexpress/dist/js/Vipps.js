@@ -10,7 +10,7 @@
  * @since     1.0.0
  */
 (function() {
-    var formUrl = '{{ siteUrl('vipps/express/checkout') }}';
+    const formUrl = '{{ siteUrl('vipps/express/checkout') }}';
     var formId = '{{ expressButtonId ~ 'Form' }}';
     var $button = document.getElementById('{{ expressButtonId }}');
     var clickHandler = (e) => {

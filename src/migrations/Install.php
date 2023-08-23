@@ -10,12 +10,11 @@
 
 namespace superbig\vipps\migrations;
 
+use Craft;
+use craft\db\Migration;
+
 use superbig\vipps\records\PaymentRecord;
 use superbig\vipps\Vipps;
-
-use Craft;
-use craft\config\DbConfig;
-use craft\db\Migration;
 
 /**
  * @author    Superbig
@@ -24,21 +23,13 @@ use craft\db\Migration;
  */
 class Install extends Migration
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var string The database driver to use
      */
-    public $driver;
+    public string $driver;
 
-    // Public Methods
-    // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
         if ($this->createTables()) {
@@ -52,10 +43,8 @@ class Install extends Migration
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function safeDown()
+
+    public function safeDown(): bool
     {
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
         $this->removeTables();
@@ -63,13 +52,10 @@ class Install extends Migration
         return true;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @return bool
      */
-    protected function createTables()
+    protected function createTables(): bool
     {
         $tablesCreated = false;
 
@@ -79,13 +65,13 @@ class Install extends Migration
             $this->createTable(
                 PaymentRecord::tableName(),
                 [
-                    'id'                   => $this->primaryKey(),
-                    'orderId'              => $this->integer()->notNull(),
+                    'id' => $this->primaryKey(),
+                    'orderId' => $this->integer()->notNull(),
                     'transactionReference' => $this->string(255)->notNull()->defaultValue(''),
-                    'shortId'              => $this->string(255)->notNull()->defaultValue(''),
-                    'dateCreated'          => $this->dateTime()->notNull(),
-                    'dateUpdated'          => $this->dateTime()->notNull(),
-                    'uid'                  => $this->uid(),
+                    'shortId' => $this->string(255)->notNull()->defaultValue(''),
+                    'dateCreated' => $this->dateTime()->notNull(),
+                    'dateUpdated' => $this->dateTime()->notNull(),
+                    'uid' => $this->uid(),
                 ]
             );
         }
@@ -96,25 +82,17 @@ class Install extends Migration
     /**
      * @return void
      */
-    protected function createIndexes()
+    protected function createIndexes(): void
     {
         $this->createIndex(
-            $this->db->getIndexName(
-                PaymentRecord::tableName(),
-                'shortId',
-                true
-            ),
+            $this->db->getIndexName(),
             PaymentRecord::tableName(),
             'shortId',
             true
         );
 
         $this->createIndex(
-            $this->db->getIndexName(
-                PaymentRecord::tableName(),
-                'transactionReference',
-                true
-            ),
+            $this->db->getIndexName(),
             PaymentRecord::tableName(),
             'transactionReference',
             true
@@ -124,10 +102,10 @@ class Install extends Migration
     /**
      * @return void
      */
-    protected function addForeignKeys()
+    protected function addForeignKeys(): void
     {
         $this->addForeignKey(
-            $this->db->getForeignKeyName(PaymentRecord::tableName(), 'orderId'),
+            $this->db->getForeignKeyName(),
             PaymentRecord::tableName(),
             'orderId',
             '{{%elements}}',
@@ -140,7 +118,7 @@ class Install extends Migration
     /**
      * @return void
      */
-    protected function removeTables()
+    protected function removeTables(): void
     {
         $this->dropTableIfExists(PaymentRecord::tableName());
     }

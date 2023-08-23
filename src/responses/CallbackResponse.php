@@ -12,12 +12,9 @@ namespace superbig\vipps\responses;
 
 use craft\commerce\base\RequestResponseInterface;
 use craft\helpers\ArrayHelper;
-use superbig\vipps\helpers\Currency;
-use superbig\vipps\helpers\LogToFile;
+use Exception;
 use superbig\vipps\Vipps;
-
-use Craft;
-use craft\base\Model;
+use function in_array;
 
 /**
  * @author    Superbig
@@ -26,26 +23,17 @@ use craft\base\Model;
  */
 class CallbackResponse implements RequestResponseInterface
 {
-    const STATUS_SALE           = 'SALE';
-    const STATUS_RESERVE        = 'RESERVE';
-    const STATUS_RESERVED       = 'RESERVED';
-    const STATUS_RESERVE_FAILED = 'RESERVE_FAILED';
-    const STATUS_SALE_FAILED    = 'SALE_FAILED';
-    const STATUS_CANCELLED      = 'CANCELLED';
-    const STATUS_REJECTED       = 'REJECTED';
+    public const STATUS_SALE = 'SALE';
+    public const STATUS_RESERVE = 'RESERVE';
+    public const STATUS_RESERVED = 'RESERVED';
+    public const STATUS_RESERVE_FAILED = 'RESERVE_FAILED';
+    public const STATUS_SALE_FAILED = 'SALE_FAILED';
+    public const STATUS_CANCELLED = 'CANCELLED';
+    public const STATUS_REJECTED = 'REJECTED';
 
-    /**
-     * @var
-     */
-    protected $data = [];
-    /**
-     * @var string
-     */
-    private $_redirect = '';
-    /**
-     * @var bool
-     */
-    private $_processing = false;
+    protected array $data = [];
+    private string $_redirect = '';
+    private bool $_processing = false;
 
     /**
      * Response constructor.
@@ -57,33 +45,31 @@ class CallbackResponse implements RequestResponseInterface
         $this->data = $data;
     }
 
-    // Public Properties
-    // =========================================================================
 
-    public function setRedirectUrl(string $url)
+    public function setRedirectUrl(string $url): void
     {
         $this->_redirect = $url;
     }
 
-    public function setProcessing(bool $status)
+    public function setProcessing(bool $status): void
     {
         $this->_processing = $status;
     }
 
 
     /**
-     * Returns whether or not the payment was successful.
+     * Returns whether the payment was successful.
      *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function isSuccessful(): bool
     {
-        $error  = ArrayHelper::getValue($this->data, 'errorInfo') || ArrayHelper::getValue($this->data, 'callbackErrorInfo');
+        $error = ArrayHelper::getValue($this->data, 'errorInfo') || ArrayHelper::getValue($this->data, 'callbackErrorInfo');
         $status = ArrayHelper::getValue($this->data, 'transactionInfo.status');
 
         return !$error &&
-            \in_array($status, [
+            in_array($status, [
                 self::STATUS_RESERVE,
                 self::STATUS_RESERVED,
                 self::STATUS_SALE,
@@ -91,7 +77,7 @@ class CallbackResponse implements RequestResponseInterface
     }
 
     /**
-     * Returns whether or not the payment is being processed by gateway.
+     * Returns whether the payment is being processed by gateway.
      *
      * @return bool
      */
@@ -100,16 +86,14 @@ class CallbackResponse implements RequestResponseInterface
         return $this->_processing;
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function isRedirect(): bool
     {
         return !empty($this->_redirect);
     }
 
     /**
-     * Returns whether or not this is a Express order
+     * Returns whether this is an Express order
      *
      * @return bool
      */
@@ -118,9 +102,7 @@ class CallbackResponse implements RequestResponseInterface
         return isset($this->data['userDetails']) && isset($this->data['shippingDetails']);
     }
 
-    /**
-     * @inheritdoc
-     */
+
     public function getRedirectMethod(): string
     {
         return 'GET';
@@ -158,7 +140,7 @@ class CallbackResponse implements RequestResponseInterface
             return '';
         }
 
-        return (string)$this->data['transactionInfo']['transactionId'] ?? '';
+        return (string)$this->data['transactionInfo']['transactionId'];
     }
 
     /**
@@ -176,7 +158,7 @@ class CallbackResponse implements RequestResponseInterface
      *
      * @return mixed
      */
-    public function getData()
+    public function getData(): mixed
     {
         return $this->data;
     }
@@ -196,7 +178,7 @@ class CallbackResponse implements RequestResponseInterface
      *
      * @return string
      */
-    public function getEmail(): string
+    public function getEmail(): string|null
     {
         return $this->data['userDetails']['email'] ?? null;
     }
@@ -208,7 +190,7 @@ class CallbackResponse implements RequestResponseInterface
      *
      * @return int
      */
-    public function getAmount($convert = true): int
+    public function getAmount(bool $convert = true): int
     {
         $amount = ArrayHelper::getValue($this->data, 'transactionInfo.amount', 0);
 
@@ -223,10 +205,9 @@ class CallbackResponse implements RequestResponseInterface
     /**
      * Perform the redirect.
      *
-     * @return mixed
+     * @return void
      */
-    public function redirect()
+    public function redirect(): void
     {
-        return false;
     }
 }
