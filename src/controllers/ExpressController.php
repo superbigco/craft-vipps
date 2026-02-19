@@ -10,7 +10,6 @@ use craft\elements\Address;
 use craft\helpers\Json;
 use craft\web\Controller;
 use superbig\vipps\gateways\Gateway;
-use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 /**
