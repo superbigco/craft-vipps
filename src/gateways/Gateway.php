@@ -1,156 +1,148 @@
 <?php
-/**
- * Vipps plugin for Craft CMS 3.x
- *
- * Integrate Commerce with Vipps
- *
- * @link      https://superbig.co
- * @copyright Copyright (c) 2018 Superbig
- */
+
+declare(strict_types=1);
 
 namespace superbig\vipps\gateways;
 
+use Craft;
 use craft\commerce\base\Gateway as BaseGateway;
 use craft\commerce\base\RequestResponseInterface;
-use craft\commerce\models\OrderStatus;
 use craft\commerce\models\payments\BasePaymentForm;
 use craft\commerce\models\Transaction;
-use craft\commerce\Plugin;
-use craft\helpers\StringHelper;
-use superbig\vipps\Vipps;
-
-use Craft;
-use craft\base\Model;
 
 /**
- * @author    Superbig
- * @package   Vipps
- * @since     1.0.0
+ * Vipps MobilePay payment gateway for Craft Commerce 5.
+ *
+ * Gateway settings are stored as properties and configured in the CP.
+ * All credential properties support environment variable syntax ($MY_VAR).
  */
 class Gateway extends BaseGateway
 {
-    use GatewayTrait;
+    // Gateway credential properties (support env vars)
+    public string $clientId = '';
 
-    // Public Properties
-    // =========================================================================
+    public string $clientSecret = '';
 
-    public $clientId                          = '';
-    public $clientSecret                      = '';
-    public $subscriptionKeyAccessToken        = '';
-    public $subscriptionKeyEcommerce          = '';
-    public $merchantSerialNumber              = '';
-    public $transactionText                   = '';
-    public $testMode                          = false;
-    public $expressCheckout                   = true;
-    public $createUserOnExpressCheckout       = true;
-    public $loginWithVipps                    = false;
-    public $addItemToCartIfAlreadyExists      = false;
-    public $newCartOnExpressCheckout          = true;
-    public $fallbackUrl                       = '';
-    public $errorFallbackUrl                  = '';
-    public $authToken                         = '';
-    public $captureOnStatusChange             = false;
-    public $captureStatusUid                  = '';
-    public $useBillingPhoneAsVippsPhoneNumber = true;
+    public string $subscriptionKey = '';
 
-    /**
-     * @inheritdoc
-     */
+    public string $merchantSerialNumber = '';
+
+    public string $transactionText = '';
+
+    public bool $testMode = false;
+
     public static function displayName(): string
     {
-        return Craft::t('vipps', 'Vipps');
+        return Craft::t('vipps', 'Vipps MobilePay');
     }
 
-    // Public Methods
-    // =========================================================================
-
     /**
-     * Makes an authorize request.
+     * Resolve gateway credentials, parsing environment variables.
      *
-     * @param Transaction     $transaction The authorize transaction
-     * @param BasePaymentForm $form        A form filled with payment info
-     *
-     * @return RequestResponseInterface
+     * @return array{
+     *     clientId: string,
+     *     clientSecret: string,
+     *     subscriptionKey: string,
+     *     msn: string,
+     *     testMode: bool,
+     * }
      */
+    public function getCredentials(): array
+    {
+        return [
+            'clientId' => Craft::parseEnv($this->clientId),
+            'clientSecret' => Craft::parseEnv($this->clientSecret),
+            'subscriptionKey' => Craft::parseEnv($this->subscriptionKey),
+            'msn' => Craft::parseEnv($this->merchantSerialNumber),
+            'testMode' => $this->testMode,
+        ];
+    }
+
     public function authorize(Transaction $transaction, BasePaymentForm $form): RequestResponseInterface
     {
-        $request = Vipps::$plugin->getPayments()->intiatePaymentFromGateway($transaction);
-
-        return $request;
+        // TODO: Step 4 — implement authorize flow
+        throw new \RuntimeException('Not yet implemented');
     }
 
-    /**
-     * Makes a capture request.
-     *
-     * @param Transaction $transaction The capture transaction
-     * @param string      $reference   Reference for the transaction being captured.
-     *
-     * @return RequestResponseInterface
-     * @throws \yii\base\Exception
-     */
     public function capture(Transaction $transaction, string $reference): RequestResponseInterface
     {
-        // https://github.com/craftcms/commerce-omnipay/blob/master/src/base/Gateway.php#L549
-        $response = Vipps::$plugin->getPayments()->captureFromGateway($transaction);
-
-        return $response;
+        // TODO: Step 4 — implement capture flow
+        throw new \RuntimeException('Not yet implemented');
     }
 
-    /**
-     * Complete the purchase for offsite payments.
-     *
-     * @param Transaction $transaction The transaction
-     *
-     * @return RequestResponseInterface
-     */
     public function completePurchase(Transaction $transaction): RequestResponseInterface
     {
-        // TODO: Implement completePurchase() method.
+        // TODO: Step 4 — implement complete purchase flow
+        throw new \RuntimeException('Not yet implemented');
     }
 
-    /**
-     * Makes a purchase request.
-     *
-     * @param Transaction     $transaction The purchase transaction
-     * @param BasePaymentForm $form        A form filled with payment info
-     *
-     * @return RequestResponseInterface
-     */
     public function purchase(Transaction $transaction, BasePaymentForm $form): RequestResponseInterface
     {
-        // TODO: Implement purchase() method.
+        // TODO: Step 4 — implement purchase flow
+        throw new \RuntimeException('Not yet implemented');
     }
 
-    /**
-     * Makes an refund request.
-     *
-     * @param Transaction $transaction The refund transaction
-     *
-     * @return RequestResponseInterface
-     * @throws \yii\base\Exception
-     */
     public function refund(Transaction $transaction): RequestResponseInterface
     {
-        $response = Vipps::$plugin->getPayments()->refundFromGateway($transaction);
-
-        return $response;
+        // TODO: Step 4 — implement refund flow
+        throw new \RuntimeException('Not yet implemented');
     }
 
-    public function getAuthToken()
+    public function getPaymentFormModel(): BasePaymentForm
     {
-        return !empty($this->authToken) ? $this->authToken : StringHelper::UUID();
+        // TODO: Step 5 — implement payment form
+        throw new \RuntimeException('Not yet implemented');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSettingsHtml()
+    public function getPaymentFormHtml(array $params): ?string
     {
-        return Craft::$app->getView()->renderTemplate('vipps/gatewaySettings', [
-            'gateway'   => $this,
-            'authToken' => $this->getAuthToken(),
-            'statuses'  => $this->getOrderStatuses(),
-        ]);
+        // TODO: Step 5 — implement payment form HTML
+        return null;
+    }
+
+    public function supportsAuthorize(): bool
+    {
+        return true;
+    }
+
+    public function supportsCapture(): bool
+    {
+        return true;
+    }
+
+    public function supportsCompleteAuthorize(): bool
+    {
+        return true;
+    }
+
+    public function supportsCompletePurchase(): bool
+    {
+        return false;
+    }
+
+    public function supportsPaymentSources(): bool
+    {
+        return false;
+    }
+
+    public function supportsPurchase(): bool
+    {
+        return false;
+    }
+
+    public function supportsRefund(): bool
+    {
+        return true;
+    }
+
+    public function supportsPartialRefund(): bool
+    {
+        return true;
+    }
+
+    public function supportsWebhooks(): bool
+    {
+        return false; // TODO: Step 6 — webhooks
     }
 
     public function getPaymentTypeOptions(): array
@@ -160,29 +152,27 @@ class Gateway extends BaseGateway
         ];
     }
 
-    public function getOrderStatuses()
+    public function getSettingsHtml(): ?string
     {
-        return array_map(function(OrderStatus $orderStatus) {
-            return [
-                'label' => $orderStatus->name,
-                'value' => $orderStatus->uid,
-            ];
-        }, Plugin::getInstance()->getOrderStatuses()->getAllOrderStatuses());
+        return Craft::$app->getView()->renderTemplate('vipps/gateway-settings', [
+            'gateway' => $this,
+        ]);
     }
 
-    public function rules()
+    public function defineRules(): array
     {
-        return array_merge(parent::rules(), [
+        $rules = parent::defineRules();
+
+        $rules[] = [
             [
-                [
-                    'clientId',
-                    'clientSecret',
-                    'subscriptionKeyAccessToken',
-                    'merchantSerialNumber',
-                    'authToken',
-                ],
-                'required',
+                'clientId',
+                'clientSecret',
+                'subscriptionKey',
+                'merchantSerialNumber',
             ],
-        ]);
+            'required',
+        ];
+
+        return $rules;
     }
 }
