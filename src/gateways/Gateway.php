@@ -7,8 +7,10 @@ namespace superbig\vipps\gateways;
 use Craft;
 use craft\commerce\base\Gateway as BaseGateway;
 use craft\commerce\base\RequestResponseInterface;
+use craft\commerce\models\PaymentSource;
 use craft\commerce\models\payments\BasePaymentForm;
 use craft\commerce\models\Transaction;
+use craft\web\Response as WebResponse;
 
 /**
  * Vipps MobilePay payment gateway for Craft Commerce 5.
@@ -86,6 +88,28 @@ class Gateway extends BaseGateway
     {
         // TODO: Step 4 — implement refund flow
         throw new \RuntimeException('Not yet implemented');
+    }
+
+    public function completeAuthorize(Transaction $transaction): RequestResponseInterface
+    {
+        // TODO: Step 4 — implement complete authorize (return from Vipps redirect)
+        throw new \RuntimeException('Not yet implemented');
+    }
+
+    public function createPaymentSource(BasePaymentForm $sourceData, int $customerId): PaymentSource
+    {
+        throw new \RuntimeException('Payment sources are not supported by Vipps');
+    }
+
+    public function deletePaymentSource(string $token): bool
+    {
+        throw new \RuntimeException('Payment sources are not supported by Vipps');
+    }
+
+    public function processWebHook(): WebResponse
+    {
+        // TODO: Step 6 — implement webhook processing
+        throw new \RuntimeException('Webhooks not yet implemented');
     }
 
     public function getPaymentFormModel(): BasePaymentForm

@@ -418,15 +418,19 @@ class VippsApi extends Component
 
     private function _getCommerceVersion(): string
     {
-        $commerce = CommercePlugin::getInstance();
-
-        return $commerce ? $commerce->getVersion() : 'unknown';
+        try {
+            return CommercePlugin::getInstance()->getVersion();
+        } catch (\Throwable) {
+            return 'unknown';
+        }
     }
 
     private function _getPluginVersion(): string
     {
-        $plugin = Vipps::getInstance();
-
-        return $plugin ? $plugin->getVersion() : 'unknown';
+        try {
+            return Vipps::getInstance()->getVersion();
+        } catch (\Throwable) {
+            return 'unknown';
+        }
     }
 }
