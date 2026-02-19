@@ -1,42 +1,67 @@
 <?php
 
-use superbig\vipps\gateways\Gateway;
+declare(strict_types=1);
 
-it('can instantiate the gateway', function() {
+use superbig\vipps\gateways\Gateway;
+use superbig\vipps\models\PaymentForm;
+use yii\base\NotSupportedException;
+
+// === Instantiation ===
+
+it('can instantiate the gateway', function () {
     expect(new Gateway())->toBeInstanceOf(Gateway::class);
 });
 
-it('supports authorize', function() {
+// === Capabilities ===
+
+it('supports authorize', function () {
     $gateway = new Gateway();
     expect($gateway->supportsAuthorize())->toBeTrue();
 });
 
-it('supports capture', function() {
+it('supports capture', function () {
     $gateway = new Gateway();
     expect($gateway->supportsCapture())->toBeTrue();
 });
 
-it('supports refund', function() {
+it('supports complete authorize', function () {
+    $gateway = new Gateway();
+    expect($gateway->supportsCompleteAuthorize())->toBeTrue();
+});
+
+it('supports refund', function () {
     $gateway = new Gateway();
     expect($gateway->supportsRefund())->toBeTrue();
 });
 
-it('supports partial refund', function() {
+it('supports partial refund', function () {
     $gateway = new Gateway();
     expect($gateway->supportsPartialRefund())->toBeTrue();
 });
 
-it('does not support purchase', function() {
+it('supports webhooks', function () {
+    $gateway = new Gateway();
+    expect($gateway->supportsWebhooks())->toBeTrue();
+});
+
+it('does not support purchase', function () {
     $gateway = new Gateway();
     expect($gateway->supportsPurchase())->toBeFalse();
 });
 
-it('does not support payment sources', function() {
+it('does not support complete purchase', function () {
+    $gateway = new Gateway();
+    expect($gateway->supportsCompletePurchase())->toBeFalse();
+});
+
+it('does not support payment sources', function () {
     $gateway = new Gateway();
     expect($gateway->supportsPaymentSources())->toBeFalse();
 });
 
-it('returns credentials with parsed env vars', function() {
+// === Credentials ===
+
+it('returns credentials with parsed env vars', function () {
     $gateway = new Gateway();
     $gateway->clientId = 'test-client-id';
     $gateway->clientSecret = 'test-secret';
@@ -53,4 +78,82 @@ it('returns credentials with parsed env vars', function() {
         'msn' => '123456',
         'testMode' => true,
     ]);
+});
+
+// === Payment Form ===
+
+it('returns a PaymentForm model', function () {
+    $gateway = new Gateway();
+
+    expect($gateway->getPaymentFormModel())->toBeInstanceOf(PaymentForm::class);
+});
+
+it('returns null for payment form HTML', function () {
+    $gateway = new Gateway();
+
+    expect($gateway->getPaymentFormHtml([]))->toBeNull();
+});
+
+// === Unsupported Operations ===
+
+it('throws NotSupportedException for purchase', function () {
+    $gateway = new Gateway();
+    $gateway->purchase(
+        new \craft\commerce\models\Transaction(),
+        new PaymentForm(),
+    );
+})->throws(NotSupportedException::class);
+
+it('throws NotSupportedException for completePurchase', function () {
+    $gateway = new Gateway();
+    $gateway->completePurchase(
+        new \craft\commerce\models\Transaction(),
+    );
+})->throws(NotSupportedException::class);
+
+it('throws NotSupportedException for createPaymentSource', function () {
+    $gateway = new Gateway();
+    $gateway->createPaymentSource(new PaymentForm(), 1);
+})->throws(NotSupportedException::class);
+
+it('throws NotSupportedException for deletePaymentSource', function () {
+    $gateway = new Gateway();
+    $gateway->deletePaymentSource('token-123');
+})->throws(NotSupportedException::class);
+
+// === Display ===
+
+it('has a display name', function () {
+    expect(Gateway::displayName())->toBe('Vipps MobilePay');
+});
+
+// === Payment Type ===
+
+it('only offers authorize payment type', function () {
+    $gateway = new Gateway();
+    $options = $gateway->getPaymentTypeOptions();
+
+    expect($options)->toHaveKey('authorize');
+    expect($options)->toHaveCount(1);
+});
+
+// === Validation Rules ===
+
+it('requires all credential fields', function () {
+    $gateway = new Gateway();
+    $rules = $gateway->defineRules();
+
+    // Find the required rule
+    $requiredFields = null;
+    foreach ($rules as $rule) {
+        if (isset($rule[1]) && $rule[1] === 'required') {
+            $requiredFields = $rule[0];
+            break;
+        }
+    }
+
+    expect($requiredFields)->toContain('clientId');
+    expect($requiredFields)->toContain('clientSecret');
+    expect($requiredFields)->toContain('subscriptionKey');
+    expect($requiredFields)->toContain('merchantSerialNumber');
 });

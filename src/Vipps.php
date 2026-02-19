@@ -40,7 +40,7 @@ class Vipps extends Plugin
     private function _registerComponents(): void
     {
         $this->setComponents([
-            'api' => services\VippsApi::class,
+            'vippsApi' => services\VippsApi::class,
             'tokenManager' => services\TokenManager::class,
         ]);
     }
