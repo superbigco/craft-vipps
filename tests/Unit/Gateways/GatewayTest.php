@@ -98,17 +98,16 @@ it('returns null for payment form HTML', function () {
 
 it('throws NotSupportedException for purchase', function () {
     $gateway = new Gateway();
-    $gateway->purchase(
-        new \craft\commerce\models\Transaction(),
-        new PaymentForm(),
-    );
+    $transaction = (new ReflectionClass(\craft\commerce\models\Transaction::class))
+        ->newInstanceWithoutConstructor();
+    $gateway->purchase($transaction, new PaymentForm());
 })->throws(NotSupportedException::class);
 
 it('throws NotSupportedException for completePurchase', function () {
     $gateway = new Gateway();
-    $gateway->completePurchase(
-        new \craft\commerce\models\Transaction(),
-    );
+    $transaction = (new ReflectionClass(\craft\commerce\models\Transaction::class))
+        ->newInstanceWithoutConstructor();
+    $gateway->completePurchase($transaction);
 })->throws(NotSupportedException::class);
 
 it('throws NotSupportedException for createPaymentSource', function () {
