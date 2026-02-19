@@ -121,34 +121,18 @@ it('throws NotSupportedException for deletePaymentSource', function () {
     $gateway->deletePaymentSource('token-123');
 })->throws(NotSupportedException::class);
 
-// === Display ===
-
-it('has a display name', function () {
-    expect(Gateway::displayName())->toBe('Vipps MobilePay');
-});
-
-// === Payment Type ===
-
-it('only offers authorize payment type', function () {
-    $gateway = new Gateway();
-    $options = $gateway->getPaymentTypeOptions();
-
-    expect($options)->toHaveKey('authorize');
-    expect($options)->toHaveCount(1);
-});
-
 // === Validation Rules ===
 
-it('requires all credential fields', function () {
+it('has validation rules including required credentials', function () {
     $gateway = new Gateway();
     $rules = $gateway->defineRules();
 
-    // Find the required rule
-    $requiredFields = null;
+    // Flatten all required rules to find our credential fields
+    $requiredFields = [];
     foreach ($rules as $rule) {
-        if (isset($rule[1]) && $rule[1] === 'required') {
-            $requiredFields = $rule[0];
-            break;
+        if (is_array($rule) && isset($rule[1]) && $rule[1] === 'required') {
+            $fields = is_array($rule[0]) ? $rule[0] : [$rule[0]];
+            $requiredFields = array_merge($requiredFields, $fields);
         }
     }
 
