@@ -47,6 +47,12 @@ class Gateway extends BaseGateway
 
     public bool $testMode = false;
 
+    // Express Checkout settings
+    public bool $expressCheckout = false;
+
+    /** @var string Profile scope to request from Vipps (e.g., "name phoneNumber address") */
+    public string $expressProfileScope = 'name phoneNumber address';
+
     public static function displayName(): string
     {
         return Craft::t('vipps', 'Vipps MobilePay');
@@ -103,6 +109,12 @@ class Gateway extends BaseGateway
                 $payload['customer'] = ['phoneNumber' => $form->phoneNumber];
             }
 
+            // Express Checkout: add shipping options and profile scope
+            if ($this->expressCheckout) {
+                $payload['shipping'] = $this->_buildShippingPayload($transaction);
+                $payload['profile'] = ['scope' => $this->expressProfileScope];
+            }
+
             $response = $this->_getApi()->createPayment(
                 $payload,
                 $transaction->hash,
@@ -123,6 +135,11 @@ class Gateway extends BaseGateway
         try {
             $credentials = $this->getCredentials();
             $response = $this->_getApi()->getPayment($transaction->reference, $credentials);
+
+            // Express Checkout: extract user profile and update order addresses
+            if ($this->expressCheckout) {
+                $this->_applyExpressProfileToOrder($transaction, $response);
+            }
 
             return new VippsResponse($response);
         } catch (VippsApiException $e) {
@@ -384,5 +401,132 @@ class Gateway extends BaseGateway
         }
 
         return sprintf('Order %s', $order->shortNumber ?: $order->number);
+    }
+
+    /**
+     * Build the shipping payload for Express Checkout.
+     *
+     * Uses dynamic shipping via a callback URL that Vipps will call
+     * with the user's address to get available shipping options.
+     */
+    private function _buildShippingPayload(Transaction $transaction): array
+    {
+        $callbackUrl = UrlHelper::actionUrl('vipps/express/shipping-callback', [
+            'reference' => $transaction->hash,
+        ]);
+
+        return [
+            'dynamicOptions' => [
+                'callbackUrl' => $callbackUrl,
+                'callbackAuthorizationToken' => $this->_generateCallbackToken($transaction),
+            ],
+        ];
+    }
+
+    /**
+     * Generate a simple HMAC token for verifying shipping callbacks.
+     *
+     * This prevents unauthorized parties from probing our shipping endpoint.
+     * The token is derived from the transaction hash and the client secret.
+     */
+    private function _generateCallbackToken(Transaction $transaction): string
+    {
+        $secret = App::parseEnv($this->clientSecret);
+
+        return hash_hmac('sha256', $transaction->hash, $secret);
+    }
+
+    /**
+     * Verify a shipping callback authorization token.
+     */
+    public function verifyCallbackToken(string $token, string $reference): bool
+    {
+        $secret = App::parseEnv($this->clientSecret);
+        $expected = hash_hmac('sha256', $reference, $secret);
+
+        return hash_equals($expected, $token);
+    }
+
+    /**
+     * Extract user profile data from a Vipps Express payment response
+     * and apply it to the Commerce order's billing/shipping addresses.
+     */
+    private function _applyExpressProfileToOrder(Transaction $transaction, array $paymentData): void
+    {
+        $userDetails = $paymentData['userDetails'] ?? null;
+        $shippingDetails = $paymentData['shippingDetails'] ?? null;
+
+        if ($userDetails === null && $shippingDetails === null) {
+            return;
+        }
+
+        $order = $transaction->getOrder();
+        if ($order === null) {
+            return;
+        }
+
+        // Build address from Vipps profile data
+        $addressData = $this->_buildAddressFromVippsProfile($userDetails, $shippingDetails);
+
+        if ($addressData !== null) {
+            $order->setShippingAddress($addressData);
+            $order->setBillingAddress($addressData);
+        }
+
+        // Set shipping method if returned
+        if ($shippingDetails !== null && !empty($shippingDetails['shippingOptionId'])) {
+            $order->shippingMethodHandle = $shippingDetails['shippingOptionId'];
+        }
+
+        // Set email from profile if order doesn't have one
+        $email = $userDetails['email'] ?? null;
+        if ($email && empty($order->getEmail())) {
+            $order->setEmail($email);
+        }
+
+        $order->recalculate();
+
+        if (!Craft::$app->getElements()->saveElement($order, false)) {
+            Craft::error(
+                sprintf('Failed to save order after Express profile update: %s', Json::encode($order->getErrors())),
+                __METHOD__,
+            );
+        }
+    }
+
+    /**
+     * Build a Craft Address array from Vipps userDetails and shippingDetails.
+     *
+     * @return array|null Address attributes for Order::setShippingAddress()
+     */
+    private function _buildAddressFromVippsProfile(?array $userDetails, ?array $shippingDetails): ?array
+    {
+        // Prefer shipping address from shippingDetails, fall back to userDetails addresses
+        $addressSource = $shippingDetails['address'] ?? null;
+
+        if ($addressSource === null && $userDetails !== null) {
+            $addresses = $userDetails['addresses'] ?? [];
+            $addressSource = $addresses[0] ?? null;
+        }
+
+        if ($addressSource === null) {
+            return null;
+        }
+
+        $address = [
+            'addressLine1' => $addressSource['addressLine1'] ?? null,
+            'addressLine2' => $addressSource['addressLine2'] ?? null,
+            'locality' => $addressSource['city'] ?? null,
+            'postalCode' => $addressSource['postCode'] ?? null,
+            'countryCode' => $addressSource['country'] ?? 'NO',
+        ];
+
+        // Add name from userDetails
+        if ($userDetails !== null) {
+            $address['firstName'] = $userDetails['firstName'] ?? null;
+            $address['lastName'] = $userDetails['lastName'] ?? null;
+        }
+
+        return $address;
     }
 }

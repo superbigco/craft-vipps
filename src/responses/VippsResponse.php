@@ -18,7 +18,7 @@ use craft\commerce\base\RequestResponseInterface;
 class VippsResponse implements RequestResponseInterface
 {
     /** Vipps states that mean the payment succeeded. */
-    private const SUCCESSFUL_STATES = ['AUTHORIZED', 'CAPTURED'];
+    private const SUCCESSFUL_STATES = ['AUTHORIZED', 'CAPTURED', 'REFUNDED'];
 
     /** Vipps states that mean the payment failed or was abandoned. */
     private const FAILED_STATES = ['ABORTED', 'EXPIRED', 'TERMINATED', 'CANCELLED'];

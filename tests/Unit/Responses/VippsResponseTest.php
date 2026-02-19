@@ -143,6 +143,19 @@ it('handles Vipps API error format with title only', function () {
     expect($response->getMessage())->toBe('Internal Server Error');
 });
 
+// === REFUNDED State ===
+
+it('treats REFUNDED as successful', function () {
+    $response = new VippsResponse([
+        'state' => 'REFUNDED',
+        'pspReference' => 'psp-refund-123',
+    ]);
+
+    expect($response->isSuccessful())->toBeTrue();
+    expect($response->isRedirect())->toBeFalse();
+    expect($response->getMessage())->toBe('Payment refunded');
+});
+
 // === Raw Data ===
 
 it('returns raw data via getData', function () {
