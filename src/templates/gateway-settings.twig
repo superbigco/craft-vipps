@@ -1,0 +1,79 @@
+{% import '_includes/forms' as forms %}
+
+{{ forms.autosuggestField({
+    label: 'Client ID'|t('vipps'),
+    id: 'clientId',
+    name: 'clientId',
+    value: gateway.clientId,
+    required: true,
+    suggestEnvVars: true,
+    instructions: 'The client ID from the Vipps MobilePay portal.'|t('vipps'),
+}) }}
+
+{{ forms.autosuggestField({
+    label: 'Client Secret'|t('vipps'),
+    id: 'clientSecret',
+    name: 'clientSecret',
+    value: gateway.clientSecret,
+    required: true,
+    suggestEnvVars: true,
+    instructions: 'The client secret from the Vipps MobilePay portal.'|t('vipps'),
+}) }}
+
+{{ forms.autosuggestField({
+    label: 'Subscription Key'|t('vipps'),
+    id: 'subscriptionKey',
+    name: 'subscriptionKey',
+    value: gateway.subscriptionKey,
+    required: true,
+    suggestEnvVars: true,
+    instructions: 'The Ocp-Apim-Subscription-Key for your sales unit.'|t('vipps'),
+}) }}
+
+{{ forms.autosuggestField({
+    label: 'Merchant Serial Number'|t('vipps'),
+    id: 'merchantSerialNumber',
+    name: 'merchantSerialNumber',
+    value: gateway.merchantSerialNumber,
+    required: true,
+    suggestEnvVars: true,
+    instructions: 'The MSN (4-10 digits) for your sales unit.'|t('vipps'),
+}) }}
+
+{{ forms.autosuggestField({
+    label: 'Transaction Text'|t('vipps'),
+    id: 'transactionText',
+    name: 'transactionText',
+    value: gateway.transactionText,
+    suggestEnvVars: true,
+    instructions: 'Default text shown to the customer in the Vipps app. Supports object templates with the order.'|t('vipps'),
+}) }}
+
+{{ forms.lightswitchField({
+    label: 'Test Mode'|t('vipps'),
+    id: 'testMode',
+    name: 'testMode',
+    on: gateway.testMode,
+    instructions: 'Use the Vipps test environment (apitest.vipps.no).'|t('vipps'),
+}) }}
+
+<hr>
+
+<h2>{{ 'Express Checkout'|t('vipps') }}</h2>
+
+{{ forms.lightswitchField({
+    label: 'Enable Express Checkout'|t('vipps'),
+    id: 'expressCheckout',
+    name: 'expressCheckout',
+    on: gateway.expressCheckout,
+    instructions: 'Allow customers to pay and provide their shipping address in one Vipps flow. Vipps will call back to get available shipping options.'|t('vipps'),
+}) }}
+
+{{ forms.autosuggestField({
+    label: 'Profile Scope'|t('vipps'),
+    id: 'expressProfileScope',
+    name: 'expressProfileScope',
+    value: gateway.expressProfileScope,
+    suggestEnvVars: true,
+    instructions: 'Space-separated list of profile data to request from Vipps. Options: name, phoneNumber, address, email.'|t('vipps'),
+}) }}

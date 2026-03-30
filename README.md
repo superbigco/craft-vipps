@@ -1,181 +1,64 @@
-# Vipps plugin for Craft CMS 3.x
+# Vipps MobilePay for Craft Commerce
 
-Integrate Craft Commerce with Vipps.
+Vipps MobilePay payment gateway for [Craft Commerce](https://craftcms.com/commerce) 5.
 
-![Screenshot](resources/img/icon.png)
+> **⚠️ Work in Progress** — This is a complete rebuild targeting the Vipps ePayment API v1. Not yet ready for production use.
 
 ## Requirements
 
-This plugin requires Craft CMS 3.1.0 and Craft Commerce 2.0 or later.
+| Requirement | Version |
+|---|---|
+| PHP | ^8.2 |
+| Craft CMS | ^5.5 |
+| Craft Commerce | ^5.0 |
 
 ## Installation
 
-To install the plugin, follow these instructions.
-
-1. Open your terminal and go to your Craft project:
-
-        cd /path/to/project
-
-2. Then tell Composer to load the plugin:
-
-        composer require superbig/craft-vipps
-
-3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Vipps.
-
-## Vipps Overview
-
-This plugin provides your Craft Commerce shop with two payment alternatives:
-
-- A normal gateway for Craft Commerce, where a customer can select Vipps when checkout out
-- Express Checkout - where a user taps the familiar, orange Vipps Checkout button and jumps right to the Vipps app to pay.
-
-### What is Vipps?
-
-Vipps is a mobile app that makes it easy to transfer money to others, pay in stores, online stores and bills.
-
-Vipps has 2.9 million users in Norway and is used daily by tens of thousands to shop online.
-
-## Configuring Vipps
-
-You may either configure the gateway on the Gateway Settings screen, or create a config file named `commerce-gateways.php` in `config/`.
-
-```php
-<?php
-return [
-    'gatewayHandle' => [
-        'testMode'                   => true,
-        'clientId'                   => '',
-        'clientSecret'               => '',
-        'subscriptionKeyAccessToken' => '',
-        'merchantSerialNumber'       => '',
-        'useBillingPhoneAsVippsPhoneNumber' => true,
-        'captureOnStatusChange'             => true,
-        'captureStatusUid'                  => '',
-        
-        // You have access to any properties on the order +
-        // a property called lineItemsText that will list the 
-        // line items as text + their quantity
-        'transactionText'            => '{lineItemsText}',
-
-        // Users will be redirected here on success or when something goes wrong
-        'fallbackUrl'                => \craft\helpers\UrlHelper::siteUrl('/shop/confirmation?order={number}'),
-
-        // Express checkout
-        'expressCheckout'              => true,
-        'newCartOnExpressCheckout'     => true,
-    ],
-];
+```bash
+composer require superbig/craft-vipps
+php craft plugin/install vipps
 ```
 
-Note that the `gatewayHandle` here has to match your gateway's handle in the Commerce Gateway settings.
+## Configuration
 
-See [Commerce docs](https://docs.craftcms.com/commerce/v2/gateway-config.html) for more information on how to configure gateways with a config file.
+Add the Vipps MobilePay gateway in **Commerce → Settings → Gateways**.
 
-### Overview of config settings
+### Gateway Settings
 
-This is an overview that shows you where to get the different config values through the Vipps Developer Portal.
+| Setting | Description | Env Var Support |
+|---|---|---|
+| Client ID | From the Vipps MobilePay portal | ✅ |
+| Client Secret | From the Vipps MobilePay portal | ✅ |
+| Subscription Key | Ocp-Apim-Subscription-Key for your sales unit | ✅ |
+| Merchant Serial Number | MSN (4-10 digits) for your sales unit | ✅ |
+| Transaction Text | Text shown in the Vipps app (supports object templates) | ✅ |
+| Test Mode | Use the Vipps test environment | — |
 
-| Config value | Description | Where to get it | Example value |
-| :--- | :--- | :--- | ---: |
-| **testMode** | Enable test mode |  | `true/false` |
-| **clientId** | Client ID | Utvikler -> Select _Showing test keys_ -> Show keys -> Client Id | String |
-| **clientSecret** | Client Secret | Utvikler -> Select _Showing test keys_ -> Show keys -> Client Secret | String |
-| **subscriptionKeyAccessToken** | Subscription Key for authorizing Vipps API calls | Utvikler -> Select _Showing test keys_ -> Show keys -> Primary or secondary key | String |
-| **merchantSerialNumber** | Merchant Serial Number | Utvikler -> Select _Showing test keys_ -> Merchant Serial Number | String |
-| **transactionText** | This text will show up in the Vipps app when a customer is paying |  | String |
-| **expressCheckout** | Enable Express Checkout | | `true/false` |  
-| **addItemToCartIfAlreadyExists** | On Express Checkout, this will decide if a item should be added to the existing cart instead of replaced | | `true/false` |
-| **newCartOnExpressCheckout** | Creates a new cart on Express Checkout | | `true/false` | 
-| **fallbackUrl** | Vipps will redirect to this URL when a payment is completed or cancelled. |  | String |
-| **errorFallbackUrl** | If you want to override the fallback URL customers are returned to when a error happens, use this option |  | String |
-| **authToken** | Read-only - Token used to verify callbacks from Vipps |  | String |
-| **captureOnStatusChange** | Enable automatic capture when switching order to new Order Status | | `true/false` | 
-| **captureStatusUid** | The uid of the Order Status to capture automatically |  | String |
-| **useBillingPhoneAsVippsPhoneNumber** | Pull the Vipps phone number automatically from billing address, if set and not empty | | `true/false` | 
+### Environment Variables
 
-### Callback URLs
+All credential fields support Craft's environment variable syntax:
 
-Note that all URLs passed to Vipps will have to be publicly available. Vipps will validate the URL, and return an error if its accessible from their servers. 
-
-## Using Vipps
-
-## Express Checkout Buttons
-
-Vipps allow a customer to check and pay for a order straight in the Vipps out, decreasing the number of steps a customer have to take to finish a order.
-
-To display a Express Checkout button for a variant:
-```twig
-{{ craft.vipps.getExpressFormButton(variant) }}
+```env
+VIPPS_CLIENT_ID=your-client-id
+VIPPS_CLIENT_SECRET=your-client-secret
+VIPPS_SUBSCRIPTION_KEY=your-subscription-key
+VIPPS_MSN=123456
 ```
 
-To display a Express Checkout button for a cart:
-```twig
-{{ craft.vipps.getExpressFormButton() }}
-```
+## Supported Features
 
-## Custom Express Checkout
+- ✅ Authorize (redirect to Vipps app)
+- ✅ Capture (full and partial)
+- ✅ Refund (full and partial)
+- 🚧 Express Checkout
+- 🚧 Webhooks
 
-If you need to do something custom around the Express Checkout flow, like allow the customer to provide a note, select quantity or use line item `options`, you can handle the input manually and submit to `/vipps/express/checkout`. This endpoint receives the same `purchasables` input as the normal Commerce endpoint.
+## API
 
-```twig
-{% set product = craft.products.one() %}
-{% set variant = product.defaultVariant %}
-<form method="POST">
-    <input type="hidden" name="action" value="vipps/express/checkout">
-    {{ csrfInput() }}
-    <input type="hidden" name="purchasables[0][qty]" value="1">
+This plugin uses the [Vipps ePayment API v1](https://developer.vippsmobilepay.com/docs/APIs/epayment-api/).
 
-    <input type="text" name="purchasables[0][note]" value="" placeholder="note">
+## License
 
-    <select name="purchasables[0][options][engraving]">
-        <option value="happy-birthday">Happy Birthday</option>
-        <option value="good-riddance">Good Riddance</option>
-    </select>
+This plugin is licensed under the [Craft License](LICENSE.md).
 
-    <select name="purchasables[0][options][giftwrap]">
-        <option value="yes">Yes Please</option>
-        <option value="no">No Thanks</option>
-    </select>
-
-    <input type="hidden" name="purchasables[0][id]" value="{{ variant.id }}">
-    <input type="submit" value="Vipps Express Checkout">
-</form>
-```
-
-See the [Commerce docs on Add to Cart](https://docs.craftcms.com/commerce/v2/adding-to-and-updating-the-cart.html) for more information.
-
-See [Brand Guidelines](https://paper.dropbox.com/doc/Vipps-Payment-guidelines--AYLr~Jd2mNsXGXJV1IGf7FBLAg-tBvSIbJpzDrqBziYeQMCH) for more advice on how to use the payment buttons.
-
-## Get Support
-
-### Discord
-
-Get in touch via the [Craft Discord](https://craftcms.com/discord), in the `#craft3-help` channel. Mention one of our team members on the following handles:
-
-- `@superbig`
-- `@fred`
-
-### Twitter
-
-Get our attention on Twitter by using the `#craftcms` hashtag and mentioning [@sjelfull](https://twitter.com/sjelfull)
-
-### Email
-
-If you have any feedback, comments, questions or suggestion: email us at `contact at superbig.co`.
-
-## Troubleshooting
-
-#### "Invalid auth token received from Vipps" error
-
-If you see this in logs, this typically means that there is a layer between Craft and Vipps that strips away the _Authorization_ header. You should start by checking if your webserver or firewall is removing it.
-
-## Vipps Roadmap
-
-Some things to do, and ideas for potential features:
-
-- [ ] Handle signup after payment 
-- [ ] Support for user signups via Vipps
-- [ ] Support for subscriptions
-- [ ] Better handling of addresses and existing customers
-
-Brought to you by [Superbig](https://superbig.co)
+Brought to you by [Superbig](https://superbig.co).
